@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/test', function () {
-    return 'Test Successful!';
-});
-
+Route::get('/{any}', function () {
+    return view('welcome');
+})->where('any', '.*');
