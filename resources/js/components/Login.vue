@@ -58,7 +58,7 @@ export default {
         if (response && response.data) {
           console.log('Login successful:', response.data);
           localStorage.setItem('token', response.data.token);
-          router.push('/');
+          router.push('/dashboard');
         }
       } catch (error) {
         console.error('Login failed:', error.response?.data?.message || 'Unknown error');

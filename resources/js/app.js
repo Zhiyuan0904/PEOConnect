@@ -1,7 +1,18 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia'; 
+import router from './router'; 
 import App from './App.vue';
-import router from './router'; // Ensure Vue Router is imported
 
+// Initialize the Vue app
 const app = createApp(App);
+
+// Set up Pinia (state management)
+const pinia = createPinia();
+app.use(pinia);
+
+// Set up Vue Router
 app.use(router);
-app.mount('#app'); // Ensure this ID matches the div in your Blade template
+
+// Mount the app to the DOM element with id="app" 
+// (matches the div in your Laravel Blade template)
+app.mount('#app');
