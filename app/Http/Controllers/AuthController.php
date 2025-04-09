@@ -47,25 +47,16 @@ class AuthController extends Controller
     // User Login
     public function login(Request $request)
     {
-        // Validate input
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
+        $request->validate([
+            'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
-        }
-
-        // Retrieve user from database
-        $user = User::where('email', $request->email)->first();
-
-        // Check if user exists and password matches
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        // Generate authentication token
+        $user = Auth::user();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -74,7 +65,6 @@ class AuthController extends Controller
             'user' => $user
         ], 200);
     }
-
 
     // Forgot Password 
     public function forgotPassword(Request $request)

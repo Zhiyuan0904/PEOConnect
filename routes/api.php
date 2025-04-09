@@ -9,28 +9,33 @@ use App\Http\Controllers\QualityController;
 use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\DeanController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\UserController;
 
-    
-// Authentication Module Routes
+// ====================
+// Public Auth Routes
+// ====================
 Route::post('/sign-up', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.reset');
 
-
-// Authenticated User Routes (Requires Login)
+// ====================
+// Authenticated Routes
+// ====================
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    // Auth actions
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Test route to check authenticated user & roles
-    Route::get('/me', function (Request $request) {
-        return response()->json([
-            'user' => $request->user(),
-            'roles' => $request->user()?->getRoleNames(),
-        ]);
-    });
+    // User Routes
+    Route::get('/me', [UserController::class, 'me']);
+    Route::get('/profile', [UserController::class, 'getProfile']);
+    Route::put('/profile', [UserController::class, 'updateProfile']);
 
-    // Role-based Routes
+    // ====================
+    // Role-based Dashboards
+    // ====================
+
     Route::middleware('role:admin')->group(function () {
         Route::get('/admin/dashboard', [AdminController::class, 'index']);
     });
@@ -54,4 +59,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware('role:student')->group(function () {
         Route::get('/student/dashboard', [StudentController::class, 'index']);
     });
+
 });
