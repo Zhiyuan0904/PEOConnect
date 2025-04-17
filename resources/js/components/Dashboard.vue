@@ -63,7 +63,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
-import SideBar from './SideBar.vue';
+import SideBar from './Sidebar.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();

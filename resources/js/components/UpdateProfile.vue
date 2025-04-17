@@ -67,7 +67,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import axios from '@/axios'
-import SideBar from './SideBar.vue'
+import SideBar from './Sidebar.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
