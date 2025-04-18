@@ -90,7 +90,7 @@
 
         <!-- Copyright -->
         <div class="text-center text-xs text-gray-500 mt-8">
-          © 2024 PEOConnect. All rights reserved.
+          © 2025 PEOConnect. All rights reserved.
         </div>
       </div>
     </footer>

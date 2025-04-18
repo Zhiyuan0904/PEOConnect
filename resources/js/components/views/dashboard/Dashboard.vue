@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container flex h-screen">
     <!-- Sidebar -->
-     <SideBar/>
+    <Sidebar/>
     
     <!-- Main Dashboard -->
     <main class="w-4/5 p-10 bg-gray-100">
@@ -63,7 +63,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
-import SideBar from './Sidebar.vue';
+import Sidebar from '@/components/common/Sidebar.vue'
 
 const router = useRouter();
 const authStore = useAuthStore();
