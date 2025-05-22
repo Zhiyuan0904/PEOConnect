@@ -4,7 +4,7 @@
       
       <!-- Left Side Illustration -->
       <div class="hidden md:flex w-1/2 bg-white items-center justify-center">
-        <img src="../assets/resetpassword.png" alt="Reset Password Illustration" class="max-w-full">
+        <img src="@/assets/resetpassword.png" alt="Reset Password Illustration" class="max-w-full">
       </div>
 
       <!-- Right Side Form -->

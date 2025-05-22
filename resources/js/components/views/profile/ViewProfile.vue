@@ -29,10 +29,10 @@
             <input type="email" :value="user.email" class="w-full bg-gray-100 border px-3 py-2 rounded cursor-not-allowed" readonly />
           </div>
 
-          <!-- Password Placeholder -->
+          <!-- Role -->
           <div>
-            <label class="block text-sm text-gray-600 mb-1">Password</label>
-            <input type="password" value="********" class="w-full bg-gray-100 border px-3 py-2 rounded cursor-not-allowed" readonly />
+            <label class="block text-sm text-gray-600 mb-1">Role</label>
+            <input type="text" :value="user.role" class="w-full bg-gray-100 border px-3 py-2 rounded cursor-not-allowed" readonly />
           </div>
         </div>
 
@@ -52,27 +52,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import axios from '@/axios'
-import Sidebar from '@/components/Sidebar.vue'
+import Sidebar from '@/components/common/Sidebar.vue'
+import { useRouter } from 'vue-router'
+import { computed, onMounted } from 'vue'
 
-const router = useRouter()
 const authStore = useAuthStore()
-const user = ref(null)
+const router = useRouter()
 
-onMounted(async () => {
+const user = computed(() => authStore.user)
+
+onMounted(() => {
   if (!authStore.isAuthenticated) {
-    router.push('/login')
-    return
-  }
-
-  try {
-    const response = await axios.get('/me')
-    user.value = response.data.user
-  } catch (error) {
-    console.error('Failed to fetch user profile:', error)
     router.push('/login')
   }
 })

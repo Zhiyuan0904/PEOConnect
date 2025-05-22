@@ -28,7 +28,7 @@
         <p class="italic text-gray-600 leading-5 mb-6">
           "Education is the most powerful weapon which you can use to change the world."<br>― Nelson Mandela
         </p>
-        <img src="../assets/homepage.png" alt="Books and magnifying glass" class="mx-auto mb-8 w-[1000px]" />
+        <img src="@/assets/homepage.png" alt="Books and magnifying glass" class="mx-auto mb-8 w-[1000px]" />
 
         <div class="max-w-3xl mx-auto text-left">
           <h3 class="text-3xl font-semibold mb-5">
@@ -90,7 +90,7 @@
 
         <!-- Copyright -->
         <div class="text-center text-xs text-gray-500 mt-8">
-          © 2024 PEOConnect. All rights reserved.
+          © 2025 PEOConnect. All rights reserved.
         </div>
       </div>
     </footer>
