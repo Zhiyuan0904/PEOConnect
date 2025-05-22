@@ -15,14 +15,17 @@
             <a href="/forgot-password" class="text-blue-500 text-sm">Forgot Password?</a>
           </div>
 
-          <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-teal-400 text-white p-3 rounded-lg text-lg">
-            Login
+          <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-teal-400 text-white p-3 rounded-lg text-lg" :disabled="isLoading">
+            <span v-if="!isLoading">Login</span>
+            <span v-else>Loading<span class="animate-pulse">...</span></span>
           </button>
+
+          <p v-if="successMessage" class="text-green-500 mt-4 text-center">{{ successMessage }}</p>
+          <p v-if="errorMessage" class="text-red-500 mt-4 text-center">{{ errorMessage }}</p>
         </form>
 
-        
         <p class="mt-6 text-center text-sm">
-          Don't have an account? 
+          Don't have an account?
           <a href="/sign-up" class="text-blue-500 font-semibold">Sign up</a>
         </p>
       </div>
@@ -30,42 +33,58 @@
 
     <!-- Right Section: Image & Branding -->
     <div class="w-1/2 bg-[#008080] text-white flex flex-col justify-center items-center p-10">
-      <img src="../assets/login.png" alt="Login Illustration" class="w-3/4 mb-6">
+      <img src="@/assets/login.png" alt="Login Illustration" class="w-3/4 mb-6">
       <h2 class="text-3xl font-bold">PEOConnect</h2>
       <p class="text-lg text-center">Connecting Education with Excellence</p>
     </div>
   </div>
 </template>
 
-<script>
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+<script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
-export default {
-  setup() {
-    const email = ref('');
-    const password = ref('');
-    const router = useRouter();
+const email = ref('');
+const password = ref('');
+const router = useRouter();
+const authStore = useAuthStore();
 
-    const loginUser = async () => {
-      try {
-        const response = await axios.post('http://127.0.0.1:8000/api/login', {
-          email: email.value,
-          password: password.value
-        });
+const isLoading = ref(false);
+const successMessage = ref('');
+const errorMessage = ref('');
 
-        if (response && response.data) {
-          console.log('Login successful:', response.data);
-          localStorage.setItem('token', response.data.token);
-          router.push('/dashboard');
-        }
-      } catch (error) {
-        console.error('Login failed:', error.response?.data?.message || 'Unknown error');
-      }
-    };
+const loginUser = async () => {
+  try {
+    isLoading.value = true;
+    errorMessage.value = '';
+    successMessage.value = '';
 
-    return { email, password, loginUser };
+    await authStore.login(email.value, password.value);
+
+    const user = authStore.user;
+    if (!user || !user.role) {
+      throw new Error('No role detected.');
+    }
+
+    successMessage.value = 'Login successful!';
+    console.log('Logged in user:', user);
+
+    const mustUpdateProfile = 
+      (!user.enroll_date || !user.expected_graduate_date || !user.actual_graduate_date) &&
+      (user.role === 'student' || user.role === 'alumni');
+
+    if (mustUpdateProfile) {
+      router.push('/update/profile');
+      return;
+    }
+
+    router.push('/dashboard');
+  } catch (error) {
+    console.error('Login failed:', error.response?.data?.message || error.message);
+    errorMessage.value = 'Login failed. Please check your credentials.';
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>

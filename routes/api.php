@@ -9,7 +9,10 @@ use App\Http\Controllers\QualityController;
 use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\DeanController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SurveyResponseController;
+use App\Http\Controllers\SurveyDistributionController;
 
 // ====================
 // Public Auth Routes
@@ -31,6 +34,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/me', [UserController::class, 'me']);
     Route::get('/profile', [UserController::class, 'getProfile']);
     Route::put('/profile', [UserController::class, 'updateProfile']);
+
+    // Survey Management Routes
+    Route::apiResource('surveys',SurveyController::class);
+
+    // 📝 Student submit survey response
+    Route::post('/survey-responses', [SurveyResponseController::class, 'store']);
+
+    // 📄 Admin view all responses 
+    Route::get('/survey-responses', [SurveyResponseController::class, 'index']);
+
+    // Survey Distribution Management
+    Route::apiResource('/survey-distributions', SurveyDistributionController::class);
+
+    Route::get('/available-surveys', [SurveyController::class, 'availableSurveys']);
+
 
     // ====================
     // Role-based Dashboards
