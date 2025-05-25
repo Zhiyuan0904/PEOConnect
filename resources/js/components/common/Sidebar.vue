@@ -101,11 +101,21 @@
 
           <li>
             <router-link
-              to="/curriculum"
+              to="/manage-curriculum-content"
               class="block p-2 rounded transition-colors duration-200"
               :class="{ 'bg-[#008080] font-semibold': isActive('/curriculum'), 'hover:bg-[#008080]': true }"
             >
               Manage Curriculum Content
+            </router-link>
+          </li>
+
+          <li>
+            <router-link
+              to="/manage/PEOs"
+              class="block p-2 rounded transition-colors duration-200"
+              :class="{ 'bg-[#008080] font-semibold': isActive('/manage/PEOs'), 'hover:bg-[#008080]': true }"
+            >
+              Manage PEO
             </router-link>
           </li>
 

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
+use Illuminate\Support\Facades\Log; // ✅ Add this line
 
 class Authenticate extends Middleware
 {
@@ -11,6 +12,12 @@ class Authenticate extends Middleware
      */
     protected function redirectTo($request): ?string
     {
-        return $request->expectsJson() ? null : route('login');
+        Log::info('✅ Custom Authenticate middleware used.');
+
+        if ($request->expectsJson()) {
+            return null;
+        }
+
+        abort(401, 'Unauthenticated');
     }
 }
