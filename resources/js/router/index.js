@@ -15,6 +15,9 @@ const EditSurveys = () => import('../components/views/survey/EditSurveys.vue');
 const RespondSurveys = () => import('../components/views/survey/RespondSurveys.vue');
 const SurveyResponses = () => import('../components/views/survey/ManageResponses.vue');
 const SurveyDistributions = () => import('../components/views/distribution/ManageDistributions.vue');
+const ManageCurriculumContent = () => import('../components/views/curriculum/ManageCurriculumContent.vue');
+const ManagePEO = () => import('../components/views/curriculum/ManagePEO.vue');
+
 
 const routes = [
   { 
@@ -150,7 +153,26 @@ const routes = [
       requiresAuth: true,
       requiresRole: 'admin'
     }
-  },  
+  }, 
+  {
+    path: '/manage-curriculum-content',
+    name: 'manage-curriculum-content',
+    component: ManageCurriculumContent,
+    meta: {
+      requiresAuth: true,
+      requiresRole: ['admin', 'lecturer']
+    }
+  },
+  {
+    path: '/manage/PEOs',
+    name: 'manage-peo',
+    component: ManagePEO,
+    meta: {
+      title: 'Manage PEO',
+      requiresAuth: true,
+      requiresRole: ['admin', 'lecturer']
+    }
+  },
   // catch-all 404 route
   {
     path: '/:pathMatch(.*)*',
@@ -191,9 +213,13 @@ router.beforeEach(async (to, from, next) => {
   // 🚀 Role-based protection (NEW!)
   if (to.meta.requiresRole) {
     const userRole = authStore.user?.role;
-    if (userRole !== to.meta.requiresRole) {
-      console.warn(`Access denied: Required ${to.meta.requiresRole}, you have ${userRole}`);
-      return next({ name: 'dashboard' }); // Redirect student to dashboard
+    const requiredRoles = Array.isArray(to.meta.requiresRole)
+      ? to.meta.requiresRole
+      : [to.meta.requiresRole];
+
+    if (!requiredRoles.includes(userRole)) {
+      console.warn(`Access denied: Required ${requiredRoles.join(', ')}, you have ${userRole}`);
+      return next({ name: 'dashboard' });
     }
   }
 
