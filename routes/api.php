@@ -14,6 +14,7 @@ use App\Http\Controllers\SurveyResponseController;
 use App\Http\Controllers\SurveyDistributionController;
 use App\Http\Controllers\CurriculumContentController;
 use App\Http\Controllers\PEOController;
+use App\Http\Controllers\ProgressController;
 
 // ====================
 // Public Authentication Routes
@@ -51,6 +52,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['role:admin|lecturer'])->group(function () {
         Route::apiResource('curriculum-content', CurriculumContentController::class);
         Route::apiResource('peos', PEOController::class);
+    });
+
+    Route::middleware(['role:admin|quality team'])->group(function () {
+        Route::get('/track/progress', [ProgressController::class, 'index']);
+        Route::get('/track/progress/{title}', [ProgressController::class, 'detail']);
+
     });
 
     // ====================

@@ -121,7 +121,7 @@
 
           <li>
             <router-link
-              to="/progress"
+              to="/track/progress"
               class="block p-2 rounded transition-colors duration-200"
               :class="{ 'bg-[#008080] font-semibold': isActive('/progress'), 'hover:bg-[#008080]': true }"
             >

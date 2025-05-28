@@ -17,6 +17,7 @@ const SurveyResponses = () => import('../components/views/survey/ManageResponses
 const SurveyDistributions = () => import('../components/views/distribution/ManageDistributions.vue');
 const ManageCurriculumContent = () => import('../components/views/curriculum/ManageCurriculumContent.vue');
 const ManagePEO = () => import('../components/views/curriculum/ManagePEO.vue');
+const TrackProgress = () => import('../components/views/progress/TrackProgress.vue');
 
 
 const routes = [
@@ -171,6 +172,16 @@ const routes = [
       title: 'Manage PEO',
       requiresAuth: true,
       requiresRole: ['admin', 'lecturer']
+    }
+  },
+  {
+    path: '/track/progress',
+    name: 'TrackProgress',
+    component: TrackProgress,
+    meta: { 
+      title: 'Track Progress',
+      requiresAuth: true, 
+      requiresRole: ['admin', 'quality team'] 
     }
   },
   // catch-all 404 route
