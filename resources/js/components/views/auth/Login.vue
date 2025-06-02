@@ -1,44 +1,76 @@
 <template>
-  <div class="h-screen flex">
-    <!-- Left Section: Login Form -->
-    <div class="w-1/2 bg-white flex flex-col justify-center items-center p-10">
-      <div class="w-3/4">
-        <h2 class="text-3xl font-bold mb-6">Login</h2>
-
-        <form @submit.prevent="loginUser" class="w-full">
-          <div class="mb-4">
-            <input v-model="email" type="email" placeholder="Email" class="w-full p-2 border-b mb-4" required />
-            <input v-model="password" type="password" placeholder="Password" class="w-full p-2 border-b mb-4" required />
-          </div>
-
-          <div class="text-right mb-4">
-            <a href="/forgot-password" class="text-blue-500 text-sm">Forgot Password?</a>
-          </div>
-
-          <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-teal-400 text-white p-3 rounded-lg text-lg" :disabled="isLoading">
-            <span v-if="!isLoading">Login</span>
-            <span v-else>Loading<span class="animate-pulse">...</span></span>
-          </button>
-
-          <p v-if="successMessage" class="text-green-500 mt-4 text-center">{{ successMessage }}</p>
-          <p v-if="errorMessage" class="text-red-500 mt-4 text-center">{{ errorMessage }}</p>
-        </form>
-
-        <p class="mt-6 text-center text-sm">
-          Don't have an account?
-          <a href="/sign-up" class="text-blue-500 font-semibold">Sign up</a>
-        </p>
+  <div class="h-screen w-full flex items-center justify-center font-sans bg-gradient-to-br from-[#fce4ec] via-[#f3e5f5] to-[#e3f2fd]">
+    <div class="w-full max-w-md bg-white bg-opacity-60 backdrop-blur-lg rounded-2xl shadow-xl p-8">
+      
+      <!-- Logo -->
+      <div class="text-center mb-6">
+        <h1 class="text-4xl font-extrabold text-[#4072bc]">Login</h1>
+        <p class="text-lg text-gray-600 mt-1">Connecting Education with Excellence</p>
       </div>
-    </div>
 
-    <!-- Right Section: Image & Branding -->
-    <div class="w-1/2 bg-[#008080] text-white flex flex-col justify-center items-center p-10">
-      <img src="@/assets/login.png" alt="Login Illustration" class="w-3/4 mb-6">
-      <h2 class="text-3xl font-bold">PEOConnect</h2>
-      <p class="text-lg text-center">Connecting Education with Excellence</p>
+      <!-- Form -->
+      <form @submit.prevent="loginUser" class="space-y-5">
+        
+        <!-- Email -->
+        <div class="relative">
+          <input
+            v-model="email"
+            type="email"
+            placeholder="Email"
+            class="w-full px-11 py-3 rounded-lg bg-white bg-opacity-80 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#a0c4ff]"
+            required
+          />
+          <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#4072bc]">
+            <i class="fas fa-envelope"></i>
+          </span>
+        </div>
+
+        <!-- Password -->
+        <div class="relative">
+          <input
+            :type="showPassword ? 'text' : 'password'"
+            v-model="password"
+            placeholder="Password"
+            class="w-full px-11 py-3 rounded-lg bg-white bg-opacity-80 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#a0c4ff]"
+            required
+          />
+          <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#4072bc]">
+            <i class="fas fa-lock"></i>
+          </span>
+          <span @click="showPassword = !showPassword" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#4072bc] cursor-pointer">
+            <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </span>
+        </div>
+
+        <!-- Forgot Password -->
+        <div class="text-right text-sm text-[#4072bc]">
+          <a href="/forgot-password" class="hover:text-[#f07ba3] transition">Forgot password?</a>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="w-full py-3 rounded-lg bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] hover:from-[#8475d2] hover:to-[#a7c8f8] text-white font-semibold transition duration-300 shadow-md"
+          :disabled="isLoading"
+        >
+          <span v-if="!isLoading">Get Started</span>
+          <span v-else>Loading<span class="animate-pulse">...</span></span>
+        </button>
+
+        <!-- Success / Error Message -->
+        <p v-if="successMessage" class="text-green-600 text-center text-sm">{{ successMessage }}</p>
+        <p v-if="errorMessage" class="text-red-500 text-center text-sm">{{ errorMessage }}</p>
+      </form>
+
+      <!-- Signup Link -->
+      <p class="mt-6 text-center text-sm text-gray-600">
+        Don’t have an account?
+        <a href="/sign-up" class="text-[#4072bc] font-semibold hover:text-[#f07ba3]">Sign up</a>
+      </p>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref } from 'vue';
@@ -47,6 +79,7 @@ import { useAuthStore } from '@/stores/auth';
 
 const email = ref('');
 const password = ref('');
+const showPassword = ref(false);
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -70,7 +103,7 @@ const loginUser = async () => {
     successMessage.value = 'Login successful!';
     console.log('Logged in user:', user);
 
-    const mustUpdateProfile = 
+    const mustUpdateProfile =
       (!user.enroll_date || !user.expected_graduate_date || !user.actual_graduate_date) &&
       (user.role === 'student' || user.role === 'alumni');
 
@@ -92,6 +125,6 @@ const loginUser = async () => {
 <style scoped>
 input:focus {
   outline: none;
-  border-color: #1B3A57;
+  border-color: #4072bc;
 }
 </style>

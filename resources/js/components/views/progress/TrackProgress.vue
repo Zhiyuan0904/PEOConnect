@@ -5,7 +5,7 @@
 
     <!-- Main Content -->
     <main class="flex-1 p-10 overflow-y-auto">
-      <h1 class="text-3xl font-bold text-[#1e3a5f] mb-6">📊 Track User Progress</h1>
+      <h1 class="text-3xl font-bold text-[#1e3a5f] mb-6">📊 Track Survey Progress</h1>
 
       <div v-if="loading" class="text-center text-gray-500">Loading progress data...</div>
 
