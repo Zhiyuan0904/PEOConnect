@@ -18,6 +18,7 @@ const SurveyDistributions = () => import('../components/views/distribution/Manag
 const ManageCurriculumContent = () => import('../components/views/curriculum/ManageCurriculumContent.vue');
 const ManagePEO = () => import('../components/views/curriculum/ManagePEO.vue');
 const TrackProgress = () => import('../components/views/progress/TrackProgress.vue');
+const ExportReports = () => import('../components/views/reports/ManageReports.vue');
 
 
 const routes = [
@@ -180,6 +181,16 @@ const routes = [
     component: TrackProgress,
     meta: { 
       title: 'Track Progress',
+      requiresAuth: true, 
+      requiresRole: ['admin', 'quality team'] 
+    }
+  },
+  {
+    path: '/reports',
+    name: 'Export Reports',
+    component: ExportReports,
+    meta: { 
+      title: 'Export Reports',
       requiresAuth: true, 
       requiresRole: ['admin', 'quality team'] 
     }
