@@ -1,140 +1,123 @@
 <template>
-  <div class="flex min-h-screen bg-gray-100">
-    <!-- Sidebar -->
+  <div class="flex min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd]">
     <Sidebar />
+    <main class="flex-1 p-10">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+          <h1 class="text-4xl font-bold text-[#4072bc]">Manage Curriculum Content</h1>
+          <button class="px-6 py-3 rounded-full bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] hover:from-[#8475d2] hover:to-[#a7c8f8] text-white font-semibold px-7 py-3 rounded-full transition duration-300 shadow-md" @click="startForm">
+            + Add Curriculum Content
+          </button>
+        </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 p-10 overflow-y-auto">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-[#1e3a5f]">Manage Curriculum Content 📘</h1>
-        <button
-          class="bg-[#1e7c99] hover:bg-[#156a84] text-white font-semibold px-5 py-3 rounded-lg"
-          @click="startForm"
-        >
-          + Add Curriculum Content
-        </button>
-      </div>
+        <div v-if="loading" class="text-center text-gray-500 text-lg py-10 animate-pulse">Loading curriculum content...</div>
 
-      <div v-if="loading" class="text-center text-gray-500 py-10">Loading curriculum content...</div>
+        <div v-else-if="contents.length === 0" class="text-center text-gray-400 text-lg py-10">No curriculum content found.</div>
 
-      <div v-else-if="contents.length === 0" class="text-center text-gray-500 py-10">
-        No curriculum content found.
-      </div>
-
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="item in contents"
-          :key="item.id"
-          class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden flex flex-col"
-        >
-          <div class="flex-1 flex flex-col p-6">
-            <h2 class="text-xl font-bold text-[#1e3a5f] mb-2">{{ item.title }}</h2>
-            <p class="text-gray-600 flex-1">{{ item.description }}</p>
-            <p class="text-gray-400 text-sm mt-2">Linked PEOs: {{ formatPeos(item.peo_ids) }}</p>
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div v-for="item in contents" :key="item.id" class="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between">
+          <img src="@/assets/curriculum.png" class="w-full h-40 object-cover" />
+          
+          <div class="p-6 flex-1">
+            <h2 class="text-xl font-bold text-[#4072bc] mb-2 truncate">{{ item.title }}</h2>
+            <p class="text-gray-600 mb-2 break-words">{{ item.description }}</p>
           </div>
-
-          <div class="flex justify-around bg-gray-50 p-4 border-t">
-            <button
-              class="bg-[#1e7c99] hover:bg-[#156a84] text-white px-4 py-2 rounded-lg"
-              @click="openForm(item)"
-            >Edit</button>
-            <button
-              class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
-              @click="deleteContent(item.id)"
-            >Delete</button>
+          
+          <div class="flex justify-around border-t px-4 py-3 bg-[#f9fafb]">
+            <button @click="openForm(item)" class="bg-[#59a8f7] text-white w-24 py-2 rounded-lg shadow">Edit</button>
+            <button @click="deleteContent(item.id)" class="bg-red-400 text-white w-24 py-2 rounded-lg shadow">Delete</button>
           </div>
         </div>
       </div>
 
-      <!-- Modal Form -->
-      <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-lg w-full max-w-xl shadow-lg">
-          <h2 class="text-2xl font-bold text-[#1e3a5f] mb-6">
-            {{ step === 1 ? 'Create Curriculum Content 📝' : 'Select Related PEO(s)' }}
-          </h2>
 
-          <!-- Step 1 -->
-          <div v-if="step === 1">
-            <label class="block mb-4">
-              <span class="text-gray-700 font-medium">Title</span>
-              <input type="text" v-model="form.title" class="w-full border p-2 rounded mt-1" required />
-            </label>
+        <!-- Modal Form -->
+        <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div class="bg-white p-10 rounded-2xl w-full max-w-xl shadow-xl">
+            <h2 class="text-2xl font-bold text-[#4072bc] mb-6">
+              {{ step === 1 ? (form.id ? 'Edit Curriculum Content' : 'Create Curriculum Content') : 'Select Related PEO(s)' }}
+            </h2>
 
-            <label class="block mb-4">
-              <span class="text-gray-700 font-medium">Description</span>
-              <textarea v-model="form.description" class="w-full border p-2 rounded mt-1" required></textarea>
-            </label>
+            <div v-if="step === 1">
+              <label class="block mb-4 text-[#4072bc] font-semibold">Title</label>
+              <input type="text" v-model="form.title" class="w-full border p-3 rounded-lg mb-4" required />
 
-            <label class="block mb-4">
-              <span class="text-gray-700 font-medium">Upload Files:</span>
-              <div class="border-2 border-dashed border-gray-300 p-6 rounded-lg mt-2 text-center text-gray-500">
-                <input type="file" class="hidden" ref="fileInput" multiple @change="handleFileChange" />
-                <div @click="$refs.fileInput.click()" class="cursor-pointer">
-                  <div class="text-4xl">&#8682;</div>
-                  <p>You can drag and drop files here or click to select them.</p>
-                </div>
-                <ul v-if="form.files.length" class="mt-2 text-sm text-gray-600">
-                  <li v-for="(file, index) in form.files" :key="index">{{ file.name }}</li>
+              <label class="block mb-4 text-[#4072bc] font-semibold">Description</label>
+              <textarea v-model="form.description" class="w-full border p-3 rounded-lg mb-4" rows="4" required></textarea>
+
+              <div v-if="form.id && form.existing_files.length > 0" class="mb-4 mt-4">
+                <p class="font-semibold text-[#4072bc]">Uploaded Files:</p>
+                <ul class="list-disc pl-5 text-sm mt-1 text-[#4072bc]">
+                  <li v-for="(file, index) in form.existing_files" :key="index">
+                    <a :href="file" target="_blank" download class="underline">Download File {{ index + 1 }}</a>
+                  </li>
                 </ul>
               </div>
-            </label>
 
-            <div class="flex justify-end gap-2 mt-6">
-              <button class="text-gray-600" @click="closeForm">Cancel</button>
-              <button class="bg-[#1e7c99] hover:bg-[#156a84] text-white px-4 py-2 rounded" @click="step = 2">
-                Next
-              </button>
+              <label class="block mb-4 text-[#4072bc] font-semibold">Upload New Files</label>
+              <FilePond ref="pond" name="file" :allowMultiple="true" :maxFiles="20" :maxFileSize="'8000MB'"
+                :acceptedFileTypes="acceptedTypes"
+                label-idle='Drag & Drop files or <span class="filepond--label-action">Browse</span>'
+                @updatefiles="handleFilePond"
+              />
+
+              <div class="flex justify-between gap-2 mt-6">
+                <button class="w-32 py-3 rounded-full bg-gray-300 text-gray-800 font-semibold shadow-lg hover:brightness-110 transition" @click="closeForm">Cancel</button>
+                <button class="w-32 py-3 bg-gradient-to-r from-[#4072bc] to-[#59a8f7] text-white px-6 py-2 rounded-full" @click="step = 2">Next</button>
+              </div>
             </div>
-          </div>
 
-          <!-- Step 2 -->
-          <div v-else-if="step === 2">
-            <div v-if="peos.length === 0" class="text-center text-gray-500 mb-4">No PEOs available.</div>
-            <div v-else class="mb-6">
-              <label class="block text-gray-700 font-medium mb-2">Select Related PEO(s):</label>
-              <div class="border p-4 rounded-lg max-h-48 overflow-y-auto">
+            <!-- Step 2 -->
+            <div v-else>
+              <label class="block mb-4 text-[#4072bc] font-semibold">Select Related PEO(s):</label>
+              <div class="border p-4 rounded-lg max-h-60 overflow-y-auto mb-6">
                 <div v-for="peo in peos" :key="peo.id" class="mb-2">
                   <label class="inline-flex items-center">
-                    <input
-                      type="checkbox"
-                      :value="peo.id"
-                      v-model="form.peo_ids"
-                      class="form-checkbox text-[#1e7c99]"
-                    />
-                    <span class="ml-2">{{ peo.code }} - {{ peo.description }}</span>
+                    <input type="checkbox" :value="peo.id" v-model="form.peo_ids" class="text-[#4072bc]" />
+                    <span class="ml-2 font-medium">{{ peo.code }} - {{ peo.description }}</span>
                   </label>
                 </div>
               </div>
-            </div>
 
-            <div class="flex justify-between gap-2">
-              <button class="text-gray-600" @click="step = 1">Back</button>
-              <button
-                class="bg-[#1e7c99] hover:bg-[#156a84] text-white px-4 py-2 rounded"
-                @click="submitForm"
-                :disabled="formLoading"
-              >
-                {{ form.id ? 'Update' : 'Create' }}
-              </button>
+              <div class="flex justify-between">
+                <button class="w-32 py-3 rounded-full bg-gray-300 text-gray-800 font-semibold shadow-lg hover:brightness-110 transition" @click="step = 1">Back</button>
+                <button class="w-32 py-3 bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] hover:from-[#8475d2] hover:to-[#a7c8f8] text-white px-6 py-2 rounded-full" @click="submitForm" :disabled="formLoading">
+                  {{ form.id ? 'Update' : 'Create' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import Sidebar from '@/components/common/Sidebar.vue'
-import axios from '@/axios'
+import { ref, onMounted, nextTick } from 'vue';
+import Sidebar from '@/components/common/Sidebar.vue';
+import axios from '@/axios';
+import vueFilePond from 'vue-filepond';
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
 
-const contents = ref([])
-const peos = ref([])
-const loading = ref(true)
-const showForm = ref(false)
-const formLoading = ref(false)
-const step = ref(1)
+const FilePond = vueFilePond(FilePondPluginFileValidateType, FilePondPluginFileValidateSize)
+const pond = ref(null)
+
+const acceptedTypes = [
+  'application/pdf',
+  'image/*',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+]
+
+const contents = ref([]);
+const peos = ref([]);
+const loading = ref(true);
+const showForm = ref(false);
+const formLoading = ref(false);
+const step = ref(1);
 
 const form = ref({
   id: null,
@@ -142,74 +125,99 @@ const form = ref({
   description: '',
   peo_ids: [],
   files: [],
-})
+  existing_files: []
+});
 
 const fetchData = async () => {
-  loading.value = true
+  loading.value = true;
   try {
     const [peoRes, contentRes] = await Promise.all([
       axios.get('/peos'),
       axios.get('/curriculum-content'),
-    ])
-    peos.value = peoRes.data
-    contents.value = contentRes.data
+    ]);
+    peos.value = peoRes.data;
+    contents.value = contentRes.data;
   } catch (err) {
-    console.error('Error loading data:', err)
-    alert('Failed to load curriculum content or PEOs.')
+    console.error('Error loading data:', err);
+    alert('Failed to load curriculum content or PEOs.');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
-
-const formatPeos = (ids) => {
-  return peos.value.filter(p => ids.includes(p.id)).map(p => p.code).join(', ')
-}
+};
 
 const startForm = () => {
-  form.value = { id: null, title: '', description: '', peo_ids: [], files: [] }
-  step.value = 1
-  showForm.value = true
-}
+  form.value = { id: null, title: '', description: '', peo_ids: [], files: [], existing_files: [] };
+  step.value = 1;
+  showForm.value = true;
+  nextTick(() => {
+    pond.value?.removeFiles();
+  });
+};
 
 const openForm = (item) => {
-  form.value = { ...item, files: [] }
-  step.value = 1
-  showForm.value = true
-}
+  form.value = {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    peo_ids: item.peo_ids,
+    files: [],
+    existing_files: item.files || []
+  };
+  step.value = 1;
+  showForm.value = true;
+  nextTick(() => {
+    pond.value?.removeFiles();
+  });
+};
 
 const closeForm = () => {
-  showForm.value = false
-  step.value = 1
-  formLoading.value = false
-}
+  showForm.value = false;
+  step.value = 1;
+  formLoading.value = false;
+};
 
-const handleFileChange = (e) => {
-  form.value.files = Array.from(e.target.files)
-}
+const handleFilePond = (fileItems) => {
+  form.value.files = fileItems.map(fileItem => fileItem.file);
+};
 
 const submitForm = async () => {
-  formLoading.value = true
+  formLoading.value = true;
   try {
-    const payload = new FormData()
-    payload.append('title', form.value.title)
-    payload.append('description', form.value.description)
-    form.value.peo_ids.forEach(id => payload.append('peo_ids[]', id))
-    form.value.files.forEach(file => payload.append('files[]', file))
+    const payload = new FormData();
+    payload.append('title', form.value.title);
+    payload.append('description', form.value.description);
+    form.value.peo_ids.forEach(id => payload.append('peo_ids[]', id));
+    form.value.files.forEach(file => payload.append('files[]', file));
 
     if (form.value.id) {
-      await axios.post(`/curriculum-content/${form.value.id}?_method=PUT`, payload)
+      await axios.post(`/curriculum-content/${form.value.id}?_method=PUT`, payload);
     } else {
-      await axios.post('/curriculum-content', payload)
+      await axios.post('/curriculum-content', payload);
     }
-    await fetchData()
-    closeForm()
+    await fetchData();
+    closeForm();
   } catch (err) {
-    console.error('Form submit error:', err)
-    alert('Error saving content.')
+    console.error('Form submit error:', err);
+    alert('Error saving content.');
   } finally {
-    formLoading.value = false
+    formLoading.value = false;
   }
-}
+};
 
-onMounted(fetchData)
+const deleteContent = async (id) => {
+  if (!confirm("Are you sure you want to delete this content?")) return;
+  try {
+    await axios.delete(`/curriculum-content/${id}`);
+    await fetchData();
+  } catch (err) {
+    console.error('Delete error:', err);
+    alert('Error deleting content.');
+  }
+};
+
+onMounted(fetchData);
 </script>
+
+<style>
+@import "filepond/dist/filepond.min.css";
+</style>

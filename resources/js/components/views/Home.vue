@@ -8,12 +8,9 @@
           <li><a href="#" class="hover:text-[#f07ba3] transition">About Us</a></li>
           <li><a href="#" class="hover:text-[#f07ba3] transition">Contact Us</a></li>
           <li>
-            <a href="/login" class="bg-gradient-to-r 
-                  from-[#8475d2] to-[#a7c8f8] 
-                  hover:from-[#f07ba3] to-[#c4a8e3] 
-                  text-white font-semibold px-7 py-3 rounded-full 
-                  transition duration-300 shadow-md">
-              Login
+            <a href="/login" class="bg-gradient-to-r from-[#8475d2] to-[#a7c8f8] hover:from-[#f07ba3] to-[#c4a8e3] text-white font-semibold px-7 py-3 rounded-full transition duration-300 shadow-md"
+            >
+            Login
             </a>
           </li>
         </ul>
@@ -37,13 +34,9 @@
             Empower your learning journey with our cutting-edge <br />
             tools and connected educational insights.
           </p>
-          <button class="bg-gradient-to-r 
-                  from-[#f07ba3] to-[#c4a8e3]
-                  hover:from-[#8475d2] hover:to-[#a7c8f8] 
-                  text-white font-semibold px-7 py-3 rounded-full 
-                  transition duration-300 shadow-md"
+          <button class="bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] hover:from-[#8475d2] hover:to-[#a7c8f8] text-white font-semibold px-7 py-3 rounded-full transition duration-300 shadow-md"
           >
-            Get Started Now
+          Get Started Now
           </button>
         </div>
 

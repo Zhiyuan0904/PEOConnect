@@ -36,6 +36,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Profile
     Route::get('/profile', [UserController::class, 'getProfile']);
     Route::put('/profile', [UserController::class, 'updateProfile']);
+    Route::post('/profile/update', [UserController::class, 'updateProfile']);
 
     // Surveys
     Route::apiResource('surveys', SurveyController::class);
@@ -44,6 +45,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Survey Responses
     Route::post('/survey-responses', [SurveyResponseController::class, 'store']); // Students
     Route::get('/survey-responses', [SurveyResponseController::class, 'index']);  // Admin
+    Route::post('/surveys/import', [SurveyController::class, 'import']);
+
 
     // Survey Distribution
     Route::apiResource('survey-distributions', SurveyDistributionController::class);
@@ -52,6 +55,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['role:admin|lecturer'])->group(function () {
         Route::apiResource('curriculum-content', CurriculumContentController::class);
         Route::apiResource('peos', PEOController::class);
+        Route::post('/peos/bulk-upload', [PEOController::class, 'bulkUpload']);
     });
 
     Route::middleware(['role:admin|quality team'])->group(function () {

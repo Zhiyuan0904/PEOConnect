@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Http\Controllers;
 
@@ -9,16 +9,18 @@ class UserController extends Controller
     // GET /profile - Retrieve current user info
     public function getProfile(Request $request)
     {
+        $user = $request->user();
+
         return response()->json([
-            'name' => $request->user()->name,
-            'email' => $request->user()->email,
-            'enroll_date' => $request->user()->enroll_date,
-            'expected_graduate_date' => $request->user()->expected_graduate_date,
-            'actual_graduate_date' => $request->user()->actual_graduate_date,
+            'name' => $user->name,
+            'email' => $user->email,
+            'enroll_date' => $user->enroll_date,
+            'expected_graduate_date' => $user->expected_graduate_date,
+            'actual_graduate_date' => $user->actual_graduate_date,
         ]);
     }
 
-    // PUT /profile - Update current user info
+    // POST /profile/update - Handle profile update without profile_picture
     public function updateProfile(Request $request)
     {
         $data = $request->validate([
@@ -45,17 +47,19 @@ class UserController extends Controller
         return response()->json(['message' => 'Profile updated successfully']);
     }
 
-    // GET /me - Retrieve authenticated user's information
+    // GET /me - Retrieve authenticated user's info (used by authStore.fetchUser())
     public function me(Request $request)
     {
+        $user = $request->user();
+
         return response()->json([
-            'id' => $request->user()->id,
-            'name' => $request->user()->name,
-            'email' => $request->user()->email,
-            'role' => $request->user()->role,
-            'enroll_date' => $request->user()->enroll_date,
-            'expected_graduate_date' => $request->user()->expected_graduate_date,
-            'actual_graduate_date' => $request->user()->actual_graduate_date,
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'enroll_date' => $user->enroll_date,
+            'expected_graduate_date' => $user->expected_graduate_date,
+            'actual_graduate_date' => $user->actual_graduate_date,
         ]);
     }
 }

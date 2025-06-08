@@ -1,107 +1,118 @@
 <template>
-  <div class="flex min-h-screen bg-gray-100">
-    <!-- Sidebar -->
+  <div class="flex min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd]">
     <Sidebar />
-
-    <!-- Main Content -->
-    <main class="flex-1 p-10 overflow-y-auto">
-      <h1 class="text-3xl font-bold text-[#1e3a5f] mb-6">📊 Track Survey Progress</h1>
-
-      <div v-if="loading" class="text-center text-gray-500">Loading progress data...</div>
-
-      <div v-else-if="progress.length === 0" class="text-center text-gray-500">
-        No progress data available.
-      </div>
-
-      <div v-else class="space-y-6">
-        <div
-          v-for="item in progress"
-          :key="item.survey_title"
-          class="bg-white shadow rounded-lg p-6"
-        >
-          <div class="flex justify-between items-center">
-            <h2 class="text-xl font-semibold text-[#1e3a5f]">{{ item.survey_title }}</h2>
-            <button
-              @click="fetchDetails(item.survey_title)"
-              class="text-sm bg-[#1e7c99] text-white px-4 py-1 rounded hover:bg-[#156a84]"
-            >
-              View Details
-            </button>
-          </div>
-          <p class="text-gray-700">
-            <strong>Responded:</strong> {{ item.responded }} / {{ item.total }}
-            <span class="ml-2 text-sm text-gray-500">({{ item.percentage }}%)</span>
-          </p>
-
-          <div class="mt-4 w-full bg-gray-200 rounded-full h-5">
-            <div
-              class="bg-[#1e7c99] h-5 rounded-full transition-all duration-500"
-              :style="{ width: item.percentage + '%' }"
-            ></div>
-          </div>
+    <main class="flex-1 p-10">
+      <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-10">
+          <h1 class="text-4xl font-bold text-[#4072bc]">Track Survey Progress</h1>
         </div>
-      </div>
 
-      <!-- Details Modal -->
-      <transition name="modal-fade">
-        <div v-if="showDetail" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
-          <div class="bg-white w-full max-w-4xl p-6 rounded-xl shadow-2xl relative overflow-y-auto max-h-[90vh]">
-            <h2 class="text-2xl font-bold text-[#1e3a5f] mb-6">{{ selectedTitle }} – Respondents</h2>
+        <!-- Loading -->
+        <div v-if="loading" class="text-center text-gray-500 text-lg py-10 animate-pulse">
+          Loading progress data...
+        </div>
 
-            <!-- Filters -->
-            <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <input
-                v-model="filter"
-                type="text"
-                placeholder="🔍 Search by name or email..."
-                class="flex-1 p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1e7c99] focus:outline-none"
-              />
-              <select
-                v-model="responseFilter"
-                class="p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1e7c99] focus:outline-none"
-              >
-                <option value="">All</option>
-                <option value="responded">✅ Responded</option>
-                <option value="not_responded">❌ Not Responded</option>
-              </select>
+        <!-- Empty -->
+        <div v-else-if="progress.length === 0" class="text-center text-gray-400 text-lg py-10">
+          No progress data available.
+        </div>
+
+        <!-- Progress Cards -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div
+            v-for="item in progress"
+            :key="item.survey_title"
+            class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition flex flex-col justify-between"
+          >
+            <div class="p-6 flex-1">
+              <h2 class="text-xl font-bold text-[#4072bc] mb-3">{{ item.survey_title }}</h2>
+              <p class="text-gray-700 mb-3">
+                <strong>Responded:</strong> {{ item.responded }} / {{ item.total }}
+                <span class="ml-2 text-sm text-[#4072bc] font-bold">({{ item.percentage }}%)</span>
+              </p>
+
+              <div class="w-full bg-gray-200 rounded-full h-5 overflow-hidden">
+                <div
+                  class="bg-gradient-to-r from-[#59a8f7] to-[#a7c8f8] h-5 rounded-full transition-all duration-500"
+                  :style="{ width: item.percentage + '%' }"
+                ></div>
+              </div>
             </div>
 
-            <!-- Table -->
-            <table class="w-full table-auto text-sm text-left border border-gray-200 rounded-lg overflow-hidden">
-              <thead class="bg-[#f1f5f9] text-gray-600 uppercase text-xs">
-                <tr>
-                  <th class="py-3 px-4">Name</th>
-                  <th class="py-3 px-4">Email</th>
-                  <th class="py-3 px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="student in filteredStudents"
-                  :key="student.email"
-                  class="border-t hover:bg-gray-50 transition"
-                >
-                  <td class="py-3 px-4 font-medium">{{ student.name }}</td>
-                  <td class="py-3 px-4">{{ student.email }}</td>
-                  <td class="py-3 px-4">
-                    <span
-                      :class="student.responded ? 'text-green-600 font-semibold' : 'text-red-500 font-semibold'"
-                    >
-                      {{ student.responded ? 'Responded' : 'Not Responded' }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <button
-              @click="showDetail = false"
-              class="absolute top-4 right-4 text-gray-600 hover:text-black text-xl font-bold"
-              aria-label="Close"
-            >×</button>
+            <div class="flex justify-center border-t px-4 py-4 bg-[#f9fafb]">
+              <button
+                @click="fetchDetails(item.survey_title)"
+                class="w-60 bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] hover:from-[#8475d2] hover:to-[#a7c8f8] transition text-white px-8 py-3 rounded-full shadow-lg"
+              >
+                View Details
+              </button>
+            </div>
           </div>
         </div>
-      </transition>
+
+        <!-- Detail Modal -->
+        <transition name="modal-fade">
+          <div v-if="showDetail" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-6xl p-10 rounded-2xl shadow-2xl relative overflow-y-auto max-h-[90vh]">
+              <h2 class="text-3xl font-bold text-[#4072bc] mb-8">{{ selectedTitle }} – Respondents</h2>
+
+              <!-- Filters -->
+              <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <input
+                  v-model="filter"
+                  type="text"
+                  placeholder="🔍 Search by name or email..."
+                  class="flex-1 p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-[#4072bc] focus:outline-none"
+                />
+                <select
+                  v-model="responseFilter"
+                  class="p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-[#4072bc] focus:outline-none"
+                >
+                  <option value="">All</option>
+                  <option value="responded">✅ Responded</option>
+                  <option value="not_responded">❌ Not Responded</option>
+                </select>
+              </div>
+
+              <!-- Table -->
+              <div class="overflow-x-auto rounded-xl border border-gray-200">
+                <table class="w-full text-sm text-left">
+                  <thead class="bg-[#f1f5f9] text-[#4072bc] font-semibold">
+                    <tr>
+                      <th class="py-4 px-6">Name</th>
+                      <th class="py-4 px-6">Email</th>
+                      <th class="py-4 px-6">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="student in filteredStudents"
+                      :key="student.email"
+                      class="border-t hover:bg-gray-50 transition"
+                    >
+                      <td class="py-3 px-6">{{ student.name }}</td>
+                      <td class="py-3 px-6">{{ student.email }}</td>
+                      <td class="py-3 px-6">
+                        <span :class="student.responded ? 'text-green-600 font-semibold' : 'text-red-500 font-semibold'">
+                          {{ student.responded ? 'Responded' : 'Not Responded' }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <button
+                @click="showDetail = false"
+                class="absolute top-4 right-4 text-gray-600 hover:text-black text-3xl font-bold"
+                aria-label="Close"
+              >×</button>
+            </div>
+          </div>
+        </transition>
+
+      </div>
     </main>
   </div>
 </template>
@@ -166,8 +177,5 @@ onMounted(fetchProgress)
 }
 .modal-fade-enter-from, .modal-fade-leave-to {
   opacity: 0;
-}
-th, td {
-  padding: 0.5rem;
 }
 </style>

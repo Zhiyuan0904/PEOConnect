@@ -6,14 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\CurriculumContent;
 use Illuminate\Support\Facades\Auth;
 
-
 class CurriculumContentController extends Controller
 {
     public function index()
     {
         try {
-            // Test the DB query
-            $data = \App\Models\CurriculumContent::all();
+            $data = CurriculumContent::all();
             return response()->json($data);
         } catch (\Throwable $e) {
             return response()->json([
@@ -32,10 +30,22 @@ class CurriculumContentController extends Controller
             'peo_ids' => 'required|array',
         ]);
 
+        $uploadedFiles = [];
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $file->move(public_path('curriculum'), $originalName);
+                $url = asset('curriculum/' . $originalName);
+                $uploadedFiles[] = $url;
+            }
+        }
+
         return CurriculumContent::create([
             'title' => $request->title,
             'description' => $request->description,
             'peo_ids' => $request->peo_ids,
+            'files' => $uploadedFiles,
             'created_by' => Auth::id(),
         ]);
     }
@@ -43,8 +53,7 @@ class CurriculumContentController extends Controller
     public function update(Request $request, $id)
     {
         $content = CurriculumContent::findOrFail($id);
-
-        $this->authorizeAccess($content); // optional role check
+        $this->authorizeAccess($content);
 
         $request->validate([
             'title' => 'required|string',
@@ -52,7 +61,23 @@ class CurriculumContentController extends Controller
             'peo_ids' => 'required|array',
         ]);
 
-        $content->update($request->all());
+        $uploadedFiles = $content->files ?? [];
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $file->move(public_path('curriculum'), $originalName);
+                $url = asset('curriculum/' . $originalName);
+                $uploadedFiles[] = $url;
+            }
+        }
+
+        $content->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'peo_ids' => $request->peo_ids,
+            'files' => $uploadedFiles,
+        ]);
 
         return response()->json(['message' => 'Updated successfully']);
     }
@@ -60,19 +85,15 @@ class CurriculumContentController extends Controller
     public function destroy($id)
     {
         $content = CurriculumContent::findOrFail($id);
-        $this->authorizeAccess($content); // optional
-
+        $this->authorizeAccess($content);
         $content->delete();
-
         return response()->json(['message' => 'Deleted']);
     }
 
-    // Optional: allow only admin or owner
     protected function authorizeAccess($content)
     {
-        if (Auth::user()->role !== 'admin' && $content->created_by !== Auth::id()){
+        if (Auth::user()->role !== 'admin' && $content->created_by !== Auth::id()) {
             abort(403, 'Unauthorized');
         }
     }
-
 }

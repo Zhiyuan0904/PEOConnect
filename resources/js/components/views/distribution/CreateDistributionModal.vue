@@ -3,7 +3,7 @@
       <div class="bg-white rounded-lg shadow-lg w-full max-w-xl p-6 relative">
         <!-- Modal Header -->
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-[#1e7c99]">📅 Schedule Survey Distribution</h2>
+          <h2 class="text-xl font-bold text-[#4072bc]">Schedule Survey Distribution</h2>
           <button @click="closeModal" class="text-gray-500 hover:text-red-500 text-xl">&times;</button>
         </div>
   

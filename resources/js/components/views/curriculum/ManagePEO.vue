@@ -1,97 +1,91 @@
 <template>
-  <div class="flex min-h-screen bg-gray-100">
-    <!-- Sidebar -->
+  <div class="flex min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd]">
     <Sidebar />
-
-    <!-- Main Content -->
-    <main class="flex-1 p-10 overflow-y-auto">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-[#1e3a5f]">Manage PEOs 🎓</h1>
-        <button
-          @click="openAddModal"
-          class="bg-[#1e7c99] hover:bg-[#156a84] text-white font-semibold px-5 py-3 rounded-lg transition duration-300"
-        >
-          + Add PEO
-        </button>
-      </div>
-
-      <!-- Loading -->
-      <div v-if="loading" class="text-center text-gray-500">Loading PEOs...</div>
-
-      <!-- Empty state -->
-      <div v-else-if="peos.length === 0" class="text-center text-gray-500">
-        No PEOs found.
-      </div>
-
-      <!-- PEO List -->
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="peo in peos"
-          :key="peo.id"
-          class="bg-white rounded-xl shadow-md p-6 space-y-3"
-        >
-          <div>
-            <h2 class="text-xl font-bold text-[#1e3a5f]">{{ peo.code }}</h2>
-            <p class="text-gray-700">{{ peo.description }}</p>
-          </div>
-          <div class="flex justify-between mt-4">
-            <button
-              @click="openEditModal(peo)"
-              class="bg-[#1e7c99] hover:bg-[#156a84] text-white px-4 py-2 rounded"
-            >
-              Edit
+    <main class="flex-1 p-10">
+      <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-10">
+          <h1 class="text-4xl font-bold text-[#4072bc]">Manage PEOs</h1>
+          <div class="flex gap-4">
+            <button @click="openAddModal"
+              class="px-6 py-3 rounded-full bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] hover:from-[#8475d2] hover:to-[#a7c8f8] text-white font-semibold px-7 py-3 rounded-full transition duration-300 shadow-md">
+              + Add PEO
             </button>
-            <button
-              @click="deletePEO(peo.id)"
-              class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-            >
-              Delete
+            <button @click="openCsvModal"
+              class="px-6 py-3 rounded-full bg-gradient-to-r from-[#34d399] to-[#059669] text-white font-semibold shadow hover:brightness-110 transition">
+              Bulk Upload
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Modal -->
-      <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-          <h3 class="text-xl font-semibold mb-4">
-            {{ editingPEO ? 'Edit PEO' : 'Add PEO' }}
-          </h3>
-          <form @submit.prevent="submitForm" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">PEO Code</label>
-              <input
-                v-model="form.code"
-                type="text"
-                class="mt-1 w-full border border-gray-300 rounded px-3 py-2"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Description</label>
-              <textarea
-                v-model="form.description"
-                rows="3"
-                class="mt-1 w-full border border-gray-300 rounded px-3 py-2"
-              ></textarea>
-            </div>
-            <div class="flex justify-end space-x-2">
-              <button
-                type="button"
-                @click="closeModal"
-                class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-[#1e7c99] hover:bg-[#156a84] text-white rounded"
-              >
-                {{ editingPEO ? 'Update' : 'Create' }}
-              </button>
-            </div>
-          </form>
+        <!-- Loading -->
+        <div v-if="loading" class="text-center text-gray-500 text-lg py-10 animate-pulse">
+          Loading PEOs...
         </div>
+
+        <!-- Empty state -->
+        <div v-else-if="peos.length === 0" class="text-center text-gray-400 text-lg py-10">
+          No PEOs found.
+        </div>
+
+        <!-- Cards -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div v-for="peo in peos" :key="peo.id"
+            class="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between">
+            <img src="@/assets/peo.jpg" class="w-full h-40 object-cover" />
+            <div class="p-6 flex-1">
+              <h2 class="text-xl font-bold text-[#4072bc] mb-2">{{ peo.code }}</h2>
+              <p class="text-gray-600 mb-2">{{ peo.description }}</p>
+            </div>
+            <div class="flex justify-around border-t px-4 py-3 bg-[#f9fafb]">
+              <button @click="openEditModal(peo)"
+                class="bg-[#59a8f7] text-white w-24 py-2 rounded-lg shadow">Edit</button>
+              <button @click="deletePEO(peo.id)"
+                class="bg-red-400 text-white w-24 py-2 rounded-lg shadow">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add/Edit Modal -->
+        <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div class="bg-white p-10 rounded-2xl w-full max-w-xl shadow-xl">
+            <h2 class="text-2xl font-bold text-[#4072bc] mb-6">
+              {{ editingPEO ? 'Edit PEO' : 'Add PEO' }}
+            </h2>
+            <form @submit.prevent="submitForm" class="space-y-6">
+              <div>
+                <label class="block mb-2 font-semibold text-[#4072bc]">PEO Code</label>
+                <input v-model="form.code" type="text" class="w-full border p-3 rounded-lg" required />
+              </div>
+              <div>
+                <label class="block mb-2 font-semibold text-[#4072bc]">Description</label>
+                <textarea v-model="form.description" rows="3" class="w-full border p-3 rounded-lg"></textarea>
+              </div>
+              <div class="flex justify-end gap-2">
+                <button type="button" @click="closeModal" class="text-gray-600 font-semibold">Cancel</button>
+                <button type="submit" class="bg-[#4072bc] text-white px-6 py-2 rounded-lg">
+                  {{ editingPEO ? 'Update' : 'Create' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- CSV Upload Modal -->
+        <div v-if="showCsvModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div class="bg-white p-10 rounded-2xl w-full max-w-xl shadow-xl">
+            <h2 class="text-2xl font-bold text-[#059669] mb-6">Bulk Upload CSV</h2>
+            <input type="file" @change="handleCsvFile" accept=".csv" class="mb-6 w-full" />
+            <div class="flex justify-end gap-2">
+              <button type="button" @click="closeCsvModal" class="text-gray-600 font-semibold">Cancel</button>
+              <button @click="uploadCsv" :disabled="csvUploading"
+                class="bg-[#059669] text-white px-6 py-2 rounded-lg">
+                {{ csvUploading ? 'Uploading...' : 'Upload' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </main>
   </div>
@@ -110,10 +104,10 @@ export default {
       loading: false,
       showModal: false,
       editingPEO: null,
-      form: {
-        code: '',
-        description: '',
-      },
+      showCsvModal: false,
+      csvFile: null,
+      csvUploading: false,
+      form: { code: '', description: '' },
     };
   },
   mounted() {
@@ -169,10 +163,37 @@ export default {
         alert('Failed to delete PEO.');
       }
     },
-  },
+    openCsvModal() {
+      this.showCsvModal = true;
+    },
+    closeCsvModal() {
+      this.showCsvModal = false;
+    },
+    handleCsvFile(e) {
+      this.csvFile = e.target.files[0];
+    },
+    async uploadCsv() {
+      if (!this.csvFile) {
+        alert('Please select a CSV file.');
+        return;
+      }
+      try {
+        this.csvUploading = true;
+        const formData = new FormData();
+        formData.append('csv', this.csvFile);
+        const response = await axios.post('/peos/bulk-upload', formData);
+        alert(`CSV uploaded: ${response.data.imported} imported, ${response.data.skipped} skipped.`);
+        this.fetchPEOs();
+        this.closeCsvModal();
+      } catch (err) {
+        console.error('CSV upload failed:', err);
+        alert('Failed to upload CSV.');
+      } finally {
+        this.csvUploading = false;
+      }
+    }
+  }
 };
 </script>
 
-<style scoped>
-/* Add modal and transition styling here if needed */
-</style>
+<style scoped></style>

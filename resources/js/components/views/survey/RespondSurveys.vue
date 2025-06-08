@@ -1,102 +1,99 @@
 <template>
-    <div class="flex h-screen">
-      <!-- Sidebar -->
-      <Sidebar />
-  
-      <!-- Main Content -->
-      <main class="w-4/5 p-10 bg-gray-100 overflow-y-auto">
+  <div class="flex min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd] relative">
+    <Sidebar />
+
+    <!-- Glow behind -->
+    <div class="absolute inset-0 flex justify-center items-center pointer-events-none z-0">
+      <div class="w-[550px] h-[550px] md:w-[700px] md:h-[700px] rounded-full blur-3xl opacity-50
+                  bg-gradient-to-br from-[#e6c752] via-[#d98ab3] to-[#7caee6] animate-floating-glow">
+      </div>
+    </div>
+
+    <main class="flex-1 flex justify-center p-10 relative z-10">
+      <div class="w-full max-w-5xl bg-white rounded-2xl shadow-xl p-10">
+
+        <h1 class="text-4xl font-bold text-[#4072bc] mb-10 text-center">📝 Respond to Survey</h1>
+
+        <!-- Loading -->
         <div v-if="loading" class="text-gray-600 text-lg animate-pulse text-center">
           Loading available surveys...
         </div>
-  
-        <div v-else class="w-full max-w-4xl mx-auto">
-          <h1 class="text-3xl font-bold text-[#1e7c99] mb-10 text-center">📝 Respond to Survey</h1>
-  
-          <!-- No surveys -->
-          <div v-if="!surveys.length && !selectedSurvey" class="text-center text-gray-500">
-            No available surveys right now.
-          </div>
-  
-          <!-- Survey List -->
-          <div v-else-if="!selectedSurvey" class="grid gap-6 md:grid-cols-2">
-            <div 
-              v-for="survey in surveys" 
-              :key="survey.id" 
-              class="bg-white p-6 rounded-lg shadow hover:shadow-xl cursor-pointer transition duration-300 flex flex-col items-center text-center"
-              @click="selectSurvey(survey)"
-            >
-              <img src="@/assets/survey.jpg" alt="Survey" class="w-24 mb-4" />
-              <h2 class="text-xl font-bold text-[#1e3a5f]">{{ survey.title }}</h2>
-              <p class="text-gray-500 mt-2">{{ survey.description }}</p>
-            </div>
-          </div>
-  
-          <!-- Selected Survey -->
-          <div v-else class="bg-white p-8 rounded-lg shadow-md">
-            <h2 class="text-2xl font-bold text-[#1e3a5f] mb-2">{{ selectedSurvey.title }}</h2>
-            <p class="text-gray-500 mb-8">{{ selectedSurvey.description }}</p>
-  
-            <form @submit.prevent="submitResponse" class="space-y-6">
-              <div 
-                v-for="(question, index) in selectedSurvey.questions" 
-                :key="index" 
-                class="space-y-2"
-              >
-                <label class="block text-gray-700 font-semibold">
-                  {{ index + 1 }}. {{ question.questionText }}
-                </label>
-  
-                <!-- Short Answer -->
-                <input 
-                  v-if="question.questionType === 'short-answer'"
-                  v-model="responses[index]"
-                  type="text"
-                  placeholder="Your answer here..."
-                  class="w-full p-3 border rounded-md focus:ring-2 focus:ring-[#1e7c99] focus:outline-none"
-                  required
-                />
-  
-                <!-- Multiple Choice -->
-                <div v-else-if="question.questionType === 'multiple-choice'" class="space-y-2">
-                  <div 
-                    v-for="(option, optIndex) in question.options" 
-                    :key="optIndex"
-                    class="flex items-center space-x-3"
-                  >
-                    <input
-                      type="radio"
-                      :name="'question-' + index"
-                      :value="option"
-                      v-model="responses[index]"
-                      required
-                      class="text-[#1e7c99] focus:ring-[#1e7c99]"
-                    />
-                    <span class="text-gray-700">{{ option }}</span>
-                  </div>
-                </div>
-              </div>
-  
-              <div class="flex justify-between items-center mt-10">
-                <button 
-                  type="button" 
-                  @click="selectedSurvey = null" 
-                  class="px-6 py-3 rounded-lg bg-gray-400 hover:bg-gray-500 text-white font-semibold transition"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  class="px-6 py-3 rounded-lg bg-[#1e7c99] hover:bg-[#156a84] text-white font-semibold transition"
-                >
-                  Submit Survey
-                </button>
-              </div>
-            </form>
+
+        <!-- No Surveys -->
+        <div v-else-if="!surveys.length && !selectedSurvey" class="text-center text-gray-500">
+          No available surveys right now.
+        </div>
+
+        <!-- Survey List -->
+        <div v-else-if="!selectedSurvey" class="grid gap-8 md:grid-cols-2">
+          <div 
+            v-for="survey in surveys" 
+            :key="survey.id" 
+            class="bg-white p-8 rounded-2xl border border-[#e3e3e3] shadow-md hover:shadow-lg cursor-pointer transition duration-300 flex flex-col items-center text-center"
+            @click="selectSurvey(survey)"
+          >
+            <img src="@/assets/survey.jpg" alt="Survey" class="w-24 mb-4" />
+            <h2 class="text-xl font-bold text-[#4072bc]">{{ survey.title }}</h2>
+            <p class="text-gray-500 mt-2">{{ survey.description }}</p>
           </div>
         </div>
-      </main>
-    </div>
-  </template>
+
+        <!-- Selected Survey Form -->
+        <div v-else class="bg-[#f9fbfd] p-8 rounded-2xl border border-[#e3e3e3] shadow">
+          <h2 class="text-3xl font-bold text-[#4072bc] mb-3">{{ selectedSurvey.title }}</h2>
+          <p class="text-gray-500 mb-8">{{ selectedSurvey.description }}</p>
+
+          <form @submit.prevent="submitResponse" class="space-y-6">
+            <div v-for="(question, index) in selectedSurvey.questions" :key="index" class="space-y-3">
+              <label class="block text-[#1e3a5f] font-semibold text-lg">
+                {{ index + 1 }}. {{ question.questionText }}
+              </label>
+
+              <!-- Short Answer -->
+              <input 
+                v-if="question.questionType === 'short-answer'"
+                v-model="responses[index]"
+                type="text"
+                placeholder="Your answer here..."
+                class="w-full p-3 border border-[#e3e3e3] rounded-lg focus:ring-2 focus:ring-[#4072bc] focus:outline-none"
+                required
+              />
+
+              <!-- Multiple Choice -->
+              <div v-else-if="question.questionType === 'multiple-choice'" class="space-y-2">
+                <div v-for="(option, optIndex) in question.options" :key="optIndex" class="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    :name="'question-' + index"
+                    :value="option"
+                    v-model="responses[index]"
+                    required
+                    class="text-[#4072bc] focus:ring-[#4072bc]"
+                  />
+                  <span class="text-gray-700">{{ option }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-between items-center mt-10">
+              <button type="button" @click="selectedSurvey = null"
+                class="px-6 py-3 rounded-xl bg-gray-400 hover:bg-gray-500 text-white font-semibold shadow">
+                Cancel
+              </button>
+
+              <button type="submit"
+                class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#f07ba3] to-[#59a8f7] text-white font-semibold shadow hover:brightness-110 transition">
+                Submit Survey
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</template>
   
   <script setup>
   import { ref, onMounted } from 'vue';
