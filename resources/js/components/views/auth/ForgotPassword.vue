@@ -1,62 +1,64 @@
 <template>
-  <div class="h-screen flex">
-    <!-- Left Section: Image -->
-    <div class="w-1/2 bg-white flex justify-center items-center">
-      <img src="@/assets/forgotpassword.png" alt="Forgot Password Illustration" class="w-3/4">
-    </div>
+  <div class="h-screen w-full flex items-center justify-center font-sans bg-gradient-to-br from-[#e3f2fd] via-[#f3e5f5] to-[#fce4ec]">
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex overflow-hidden">
 
-    <!-- Right Section: Form -->
-    <div class="w-1/2 bg-gradient-to-b from-blue-500 to-blue-900 flex justify-center items-center">
-      <div class="bg-white p-10 rounded-2xl shadow-lg w-3/4">
-        <h2 class="text-2xl font-bold text-center mb-2">Forgot Password ?</h2>
-        <p class="text-sm text-gray-600 text-center mb-6">
-          No worries, we can help you reset it.<br>
-          Please enter your email address below to receive a password reset link.
-        </p>
-
-        <form @submit.prevent="sendResetLink">
-          <div class="mb-4">
-            <input v-model="email" type="email" placeholder="Email" class="w-full p-2 border-b mb-4 focus:outline-none" required />
-          </div>
-
-          <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-teal-400 text-white p-3 rounded-lg text-lg" :disabled="loading">
-            <span v-if="!loading">Send Reset Link</span>
-            <span v-else>Sending...</span>
-          </button>
-        </form>
+      <!-- Left Illustration -->
+      <div class="hidden md:flex w-1/2 bg-white items-center justify-center p-6">
+        <img src="@/assets/forgotpassword.png" alt="Forgot Password" class="max-w-[80%]" />
       </div>
+
+      <!-- Right Form -->
+      <div class="w-full md:w-1/2 p-10 bg-gradient-to-b from-[#4072bc] to-[#5ca1d4] flex flex-col justify-center">
+        <div class="bg-white p-8 rounded-xl shadow-lg">
+          <h2 class="text-2xl font-bold text-center mb-2 text-[#1B3A57]">Forgot Password?</h2>
+          <p class="text-sm text-gray-600 text-center mb-6 leading-relaxed">
+            No worries! Enter your email and we’ll send you a reset link.
+          </p>
+
+          <form @submit.prevent="sendResetLink" class="space-y-4">
+            <input
+              v-model="email"
+              type="email"
+              placeholder="Enter your email"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a0c4ff]"
+              required
+            />
+
+            <button
+              type="submit"
+              class="w-full py-3 bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] hover:from-[#8475d2] hover:to-[#a7c8f8] text-white font-semibold rounded-lg transition duration-300 shadow-md"
+              :disabled="loading"
+            >
+              <span v-if="!loading">Send Reset Link</span>
+              <span v-else>Sending<span class="animate-pulse">...</span></span>
+            </button>
+          </form>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
 
-<script>
-import axios from 'axios';
+<script setup>
 import { ref } from 'vue';
+import axios from '@/axios'; // Your configured instance
 
-export default {
-  setup() {
-    const email = ref('');
-    const loading = ref(false);
+const email = ref('');
+const loading = ref(false);
 
-    const sendResetLink = async () => {
-      try {
-        loading.value = true;
+const sendResetLink = async () => {
+  try {
+    loading.value = true;
 
-        const response = await axios.post('http://127.0.0.1:8000/api/forgot-password', {
-          email: email.value
-        });
+    await axios.post('/forgot-password', { email: email.value });
 
-        console.log('Reset link sent:', response.data.message);
-        alert('A password reset link has been sent to your email.');
-      } catch (error) {
-        console.error('Error sending reset link:', error.response?.data?.message || 'Unknown error');
-        alert('Failed to send reset link. Please check your email.');
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    return { email, loading, sendResetLink };
+    alert('✅ A password reset link has been sent to your email.');
+  } catch (error) {
+    console.error('Error:', error.response?.data?.message || error.message);
+    alert('❌ Failed to send reset link. Please try again.');
+  } finally {
+    loading.value = false;
   }
 };
 </script>
@@ -64,6 +66,6 @@ export default {
 <style scoped>
 input:focus {
   outline: none;
-  border-color: #1B3A57;
+  border-color: #4072bc;
 }
 </style>

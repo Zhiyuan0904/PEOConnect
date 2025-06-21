@@ -1,51 +1,72 @@
 <template>
-  <div class="h-screen flex items-center justify-center bg-gray-100">
-    <div class="w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden flex">
-      
-      <!-- Left Side Illustration -->
-      <div class="hidden md:flex w-1/2 bg-white items-center justify-center">
-        <img src="@/assets/resetpassword.png" alt="Reset Password Illustration" class="max-w-full">
+  <div class="h-screen w-full flex items-center justify-center font-sans bg-gradient-to-br from-[#e3f2fd] via-[#f3e5f5] to-[#fce4ec]">
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex overflow-hidden">
+
+      <!-- Left Illustration -->
+      <div class="hidden md:flex w-1/2 bg-white items-center justify-center p-6">
+        <img src="@/assets/resetpassword.png" alt="Reset Password" class="max-w" />
       </div>
 
-      <!-- Right Side Form -->
-      <div class="w-full md:w-1/2 bg-gradient-to-b from-blue-500 to-teal-500 p-8 flex flex-col justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-md">
-          <h2 class="text-2xl font-bold mb-4 text-center">Enter New Password</h2>
-          <p class="text-center text-gray-600 mb-4">Please enter a new password different from the previous one.</p>
+      <!-- Right Form -->
+      <div class="w-full md:w-1/2 p-10 bg-gradient-to-b from-[#4072bc] to-[#5ca1d4] flex flex-col justify-center">
+        <div class="bg-white p-8 rounded-xl shadow-lg">
+          <h2 class="text-2xl font-bold text-center mb-3 text-[#1B3A57]">Enter New Password</h2>
+          <p class="text-sm text-gray-600 text-center mb-6">Please choose a password different from the previous one.</p>
 
-          <div v-if="invalidToken" class="mb-4 p-3 bg-red-100 text-red-700 rounded">
+          <!-- Invalid token warning -->
+          <div v-if="invalidToken" class="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm text-center">
             Invalid or expired reset link. Please request a new password reset.
           </div>
 
-          <form @submit.prevent="handleReset" v-else>
-            <div class="mb-4">
-              <label class="block text-gray-700 mb-2">Email</label>
-              <input v-model="form.email" type="email" class="w-full p-2 border rounded" :readonly="true" required>
+          <!-- Password Reset Form -->
+          <form @submit.prevent="handleReset" v-else class="space-y-4">
+            <div>
+              <label class="block text-gray-700 mb-1 text-sm">Email</label>
+              <input
+                v-model="form.email"
+                type="email"
+                readonly
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
+              />
             </div>
 
-            <div class="mb-4">
-              <label class="block text-gray-700 mb-2">New Password</label>
-              <input v-model="form.password" type="password" class="w-full p-2 border rounded" required minlength="8">
-              <span class="text-red-500 text-sm">{{ errors.password?.[0] }}</span>
+            <div>
+              <label class="block text-gray-700 mb-1 text-sm">New Password</label>
+              <input
+                v-model="form.password"
+                type="password"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#a0c4ff]"
+                required
+                minlength="8"
+              />
+              <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password[0] }}</p>
             </div>
 
-            <div class="mb-6">
-              <label class="block text-gray-700 mb-2">Confirm Password</label>
-              <input v-model="form.password_confirmation" type="password" class="w-full p-2 border rounded" required>
-              <span v-if="form.password !== form.password_confirmation" class="text-red-500 text-sm">
-                Passwords do not match
-              </span>
+            <div>
+              <label class="block text-gray-700 mb-1 text-sm">Confirm Password</label>
+              <input
+                v-model="form.password_confirmation"
+                type="password"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#a0c4ff]"
+                required
+              />
+              <p v-if="form.password !== form.password_confirmation" class="text-red-500 text-xs mt-1">
+                Passwords do not match.
+              </p>
             </div>
 
-            <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
-              :disabled="isSubmitting || form.password !== form.password_confirmation">
-              <span v-if="isSubmitting">Processing...</span>
-              <span v-else>Submit</span>
+            <button
+              type="submit"
+              class="w-full py-3 bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] hover:from-[#8475d2] hover:to-[#a7c8f8] text-white font-semibold rounded-lg transition duration-300 shadow-md"
+              :disabled="isSubmitting || form.password !== form.password_confirmation"
+            >
+              <span v-if="!isSubmitting">Submit</span>
+              <span v-else>Processing<span class="animate-pulse">...</span></span>
             </button>
           </form>
 
           <div class="mt-4 text-center">
-            <router-link to="/login" class="text-blue-500 hover:underline">Back to Login</router-link>
+            <router-link to="/login" class="text-sm text-[#4072bc] hover:underline">Back to Login</router-link>
           </div>
         </div>
       </div>
@@ -57,10 +78,13 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+import axios from '@/axios';
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
+
 const errors = ref({});
 const invalidToken = ref(false);
 const isSubmitting = ref(false);
@@ -87,21 +111,23 @@ const handleReset = async () => {
   isSubmitting.value = true;
 
   try {
-    const response = await axios.post('/api/reset-password', {
+    await axios.post('/reset-password', {
       email: form.value.email,
       token: form.value.token,
       password: form.value.password,
       password_confirmation: form.value.password_confirmation
     });
 
-    alert(response.data.message);
-    router.push('/login');
+    localStorage.removeItem('token');
+    if (authStore.logout) await authStore.logout();
+
+    router.push({ name: 'login', query: { reset: 'success' } });
+
   } catch (error) {
     if (error.response?.status === 422) {
       errors.value = error.response.data.errors;
     } else if (error.response?.status === 400) {
       invalidToken.value = true;
-      alert(error.response.data.message);
     } else {
       alert('An unexpected error occurred. Please try again.');
     }
@@ -111,4 +137,9 @@ const handleReset = async () => {
 };
 </script>
 
-
+<style scoped>
+input:focus {
+  outline: none;
+  border-color: #4072bc;
+}
+</style>

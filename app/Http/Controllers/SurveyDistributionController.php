@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\SurveyDistribution;
 use App\Models\Survey;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SurveyDistributionMail;
 use Carbon\Carbon;
 
 class SurveyDistributionController extends Controller
@@ -16,7 +19,7 @@ class SurveyDistributionController extends Controller
         return response()->json($distributions);
     }
 
-    // Admin Action: Create a new distribution
+    // Admin Action: Create a new distribution and send email
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -28,13 +31,25 @@ class SurveyDistributionController extends Controller
             'scheduled_active_date' => 'required|date',
         ]);
 
-        // ✨ Auto set is_active based on today's date
+        // Set is_active based on whether the scheduled date is in the past
         $validated['is_active'] = Carbon::parse($validated['scheduled_active_date'])->isPast() ? 1 : 0;
 
+        // Create the distribution
         $distribution = SurveyDistribution::create($validated);
 
+        // Generate the survey link (Vue is served from Laravel)
+        $surveyLink = url('/respond/surveys/' . $validated['survey_id']);
+
+        // Get all users with matching role
+        $recipients = User::where('role', $validated['target_role'])->pluck('email');
+
+        // Send email to each user
+        foreach ($recipients as $email) {
+            Mail::to($email)->send(new SurveyDistributionMail($surveyLink));
+        }
+
         return response()->json([
-            'message' => 'Survey distribution created successfully!',
+            'message' => 'Survey distribution created and emails sent!',
             'distribution' => $distribution
         ], 201);
     }

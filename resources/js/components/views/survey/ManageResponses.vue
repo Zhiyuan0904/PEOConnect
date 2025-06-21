@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd] relative">
+  <div class="flex ml-[20%] min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd] relative">
     <Sidebar />
 
     <!-- Glow Background -->
@@ -38,10 +38,10 @@
           <table class="min-w-full text-sm border border-[#e3e3e3]">
             <thead class="bg-[#f9fbfd]">
               <tr>
-                <th class="py-3 px-4 text-left font-semibold text-[#4072bc] border-b">Survey</th>
-                <th class="py-3 px-4 text-left font-semibold text-[#4072bc] border-b">User</th>
-                <th class="py-3 px-4 text-left font-semibold text-[#4072bc] border-b">Submitted At</th>
-                <th class="py-3 px-4 text-center font-semibold text-[#4072bc] border-b">Actions</th>
+                <th class="py-3 px-4 text-left font-bold text-[#4072bc] border-b">Survey</th>
+                <th class="py-3 px-4 text-left font-bold text-[#4072bc] border-b">User</th>
+                <th class="py-3 px-4 text-left font-bold text-[#4072bc] border-b">Submitted At</th>
+                <th class="py-3 px-4 text-center font-bold text-[#4072bc] border-b">Actions</th>
               </tr>
             </thead>
             <tbody>

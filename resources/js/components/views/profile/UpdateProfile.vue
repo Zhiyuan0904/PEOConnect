@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd]">
+  <div class="flex ml-[20%] min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd]">
     <Sidebar />
     <main class="flex-1 flex items-center justify-center p-6">
       <div class="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-10">
@@ -24,7 +24,7 @@
           </div>
 
           <!-- Dates (hide for admin) -->
-          <div v-if="!isAdmin">
+          <div v-if="!isAcademicStaff">
             <div>
               <label class="block text-sm font-medium text-[#6c6f73] mb-1">Enroll Date</label>
               <input v-model="form.enroll_date" type="date" class="w-full border border-[#e3e3e3] rounded-lg px-3 py-2" required />
@@ -91,7 +91,9 @@ const form = ref({
 });
 
 const currentUser = computed(() => authStore.user || { name: '', email: '', role: '' });
-const isAdmin = computed(() => authStore.user?.role === 'admin');
+const isAcademicStaff = computed(() =>
+  ['admin', 'dean', 'lecturer', 'quality team'].includes(authStore.user?.role)
+);
 
 const formatDate = (dateString) => (!dateString ? '' : new Date(dateString).toISOString().split('T')[0]);
 
@@ -103,7 +105,7 @@ const loadUserData = async () => {
 
     if (user) {
       form.value.name = user.name || '';
-      if (!isAdmin.value) {
+      if (!isAcademicStaff.value) {
         form.value.enroll_date = user.enroll_date ? formatDate(user.enroll_date) : '';
         form.value.expected_graduate_date = user.expected_graduate_date ? formatDate(user.expected_graduate_date) : '';
         form.value.actual_graduate_date = user.actual_graduate_date ? formatDate(user.actual_graduate_date) : '';
@@ -129,7 +131,7 @@ const updateProfile = async () => {
 
     const payload = new FormData();
     payload.append('name', form.value.name);
-    if (!isAdmin.value) {
+    if (!isAcademicStaff.value) {
       payload.append('enroll_date', form.value.enroll_date);
       payload.append('expected_graduate_date', form.value.expected_graduate_date);
       payload.append('actual_graduate_date', form.value.actual_graduate_date);

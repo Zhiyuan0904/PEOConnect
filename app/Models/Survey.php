@@ -12,10 +12,10 @@ class Survey extends Model
     protected $fillable = [
         'title',
         'description',
-        'questions', // ✅ important! must allow 'questions' field
+        'questions', 
     ];
 
     protected $casts = [
-        'questions' => 'array', // ✅ automatically cast questions JSON to array
+        'questions' => 'array', 
     ];
 }

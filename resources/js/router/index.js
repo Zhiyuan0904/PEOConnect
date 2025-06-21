@@ -19,6 +19,10 @@ const ManageCurriculumContent = () => import('../components/views/curriculum/Man
 const ManagePEO = () => import('../components/views/curriculum/ManagePEO.vue');
 const TrackProgress = () => import('../components/views/progress/TrackProgress.vue');
 const ExportReports = () => import('../components/views/reports/ManageReports.vue');
+const ManageRoles = () => import('../components/views/roles/ManageRoles.vue');
+const EmailVerifiedSuccess = () => import('../components/views/auth/VerifiedSuccess.vue');
+const VerifyEmail = () => import('../components/views/auth/VerifyEmail.vue');
+const ResetPasswordFirstTime = () => import("../components/views/auth/ResetPasswordFirstTime.vue");
 
 
 const routes = [
@@ -77,7 +81,8 @@ const routes = [
     component: Dashboard,
     meta: { 
       title: 'Dashboard',
-      requiresAuth: true // Auth protection
+      requiresAuth: true,
+      requiredRoles: ['admin', 'quality team', 'dean']
     }
   },
   { 
@@ -105,7 +110,7 @@ const routes = [
     meta: {
       title: 'Manage Surveys',
       requiresAuth: true,
-      requiresRole: 'admin'
+      requiresRole: ['admin', 'quality team', 'dean', 'lecturer']
     }
   },  
   { 
@@ -133,7 +138,7 @@ const routes = [
     meta: {
       title: 'Respond to Surveys',
       requiresAuth: true,
-      requiresRole: 'student'
+      requiresRole: ['student', 'alumni']
     }
   },  
   {
@@ -148,12 +153,12 @@ const routes = [
   }, 
   {
     path: '/manage/distributions',  //Manage Distributions Survey
-    name: '/survey-distributions',
+    name: 'survey-distributions',
     component: SurveyDistributions,
     meta: {
       title: 'Survey Distributions',
       requiresAuth: true,
-      requiresRole: 'admin'
+      requiresRole: ['admin', 'quality team']
     }
   }, 
   {
@@ -162,7 +167,7 @@ const routes = [
     component: ManageCurriculumContent,
     meta: {
       requiresAuth: true,
-      requiresRole: ['admin', 'lecturer']
+      requiresRole: ['admin', 'quality team', 'lecturer']
     }
   },
   {
@@ -172,7 +177,7 @@ const routes = [
     meta: {
       title: 'Manage PEO',
       requiresAuth: true,
-      requiresRole: ['admin', 'lecturer']
+      requiresRole: ['admin', 'quality team', 'lecturer']
     }
   },
   {
@@ -182,7 +187,7 @@ const routes = [
     meta: { 
       title: 'Track Progress',
       requiresAuth: true, 
-      requiresRole: ['admin', 'quality team'] 
+      requiresRole: ['admin', 'quality team', 'dean'] 
     }
   },
   {
@@ -192,7 +197,38 @@ const routes = [
     meta: { 
       title: 'Export Reports',
       requiresAuth: true, 
-      requiresRole: ['admin', 'quality team'] 
+      requiresRole: ['admin', 'quality team', 'dean'] 
+    }
+  },
+  {
+    path: '/manage-roles',
+    name: 'manage-roles',
+    component: ManageRoles,
+    meta: { 
+      title: 'Manage Roles',
+      requiresAuth: true,
+      requiresRole: 'admin'
+    }
+  },
+  {
+    path: '/email/verify/:id/:hash',
+    name: 'verify-email',
+    component: VerifyEmail,
+    meta: {
+      title: 'Verify Email'
+    }
+  },
+  {
+    path: '/email/verified-success',
+    name: 'email-verified-success',
+    component: EmailVerifiedSuccess,
+  },
+  {
+    path: '/reset-password-first-time',
+    name: 'ResetPasswordFirstTime',
+    component: ResetPasswordFirstTime,
+    meta: { 
+      requiresAuth: true 
     }
   },
   // catch-all 404 route
@@ -219,21 +255,36 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const isAuthenticated = authStore.isAuthenticated;
 
-  // Set page title
+  // ✅ Set dynamic page title
   document.title = to.meta.title ? `${to.meta.title} | PEOConnect` : 'PEOConnect';
 
-  // Auth protection
+  // ✅ Guest-only routes: allow access if not logged in
+  if (to.meta.guestOnly) {
+  if (isAuthenticated) {
+    const user = authStore.user;
+
+    if (!user || !user.role) {
+      await authStore.logout(); // corrupted token or missing info
+      return next();
+    }
+
+    if (to.name === 'login') {
+      return next(); // ✅ Allow login page even if logged in
+    }
+
+    return next({ name: 'dashboard' }); // 🚫 Redirect others
+  }
+  return next();
+}
+
+
+  // ✅ Auth-required route check
   if (to.meta.requiresAuth && !isAuthenticated) {
     return next({ name: 'login', query: { redirect: to.fullPath } });
   }
 
-  // Guest-only routes (like login/signup)
-  if (to.meta.guestOnly && isAuthenticated) {
-    return next({ name: 'dashboard' });
-  }
-
-  // 🚀 Role-based protection (NEW!)
-  if (to.meta.requiresRole) {
+  // ✅ Role-based access check (only for logged-in users)
+  if (to.meta.requiresRole && isAuthenticated) {
     const userRole = authStore.user?.role;
     const requiredRoles = Array.isArray(to.meta.requiresRole)
       ? to.meta.requiresRole

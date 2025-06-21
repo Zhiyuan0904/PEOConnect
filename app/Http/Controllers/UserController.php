@@ -51,7 +51,6 @@ class UserController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
-
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
@@ -60,6 +59,8 @@ class UserController extends Controller
             'enroll_date' => $user->enroll_date,
             'expected_graduate_date' => $user->expected_graduate_date,
             'actual_graduate_date' => $user->actual_graduate_date,
-        ]);
+            'email_verified_at' => $user->email_verified_at,
+            'must_reset_password' => $user->must_reset_password,
+        ], 200);
     }
 }

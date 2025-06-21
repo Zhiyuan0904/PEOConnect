@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd] relative">
+  <div class="flex ml-[20%] min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd] relative">
     <Sidebar />
 
     <!-- Glow behind -->
@@ -78,12 +78,12 @@
             <!-- Buttons -->
             <div class="flex justify-between items-center mt-10">
               <button type="button" @click="selectedSurvey = null"
-                class="px-6 py-3 rounded-xl bg-gray-400 hover:bg-gray-500 text-white font-semibold shadow">
+                class="px-6 py-3 rounded-full bg-gray-300 text-gray-800 font-semibold shadow-lg hover:brightness-110 transition">
                 Cancel
               </button>
 
               <button type="submit"
-                class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#f07ba3] to-[#59a8f7] text-white font-semibold shadow hover:brightness-110 transition">
+                class="px-6 py-3 bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] hover:from-[#8475d2] hover:to-[#a7c8f8] text-white font-semibold rounded-full shadow-lg hover:brightness-110 transition">
                 Submit Survey
               </button>
             </div>
@@ -94,54 +94,63 @@
     </main>
   </div>
 </template>
-  
-  <script setup>
-  import { ref, onMounted } from 'vue';
-  import axios from '@/axios';
-  import Sidebar from '@/components/common/Sidebar.vue'; // Your Sidebar component
-  
-  const surveys = ref([]);
-  const loading = ref(true);
-  const selectedSurvey = ref(null);
-  const responses = ref([]);
-  
-  const fetchSurveys = async () => {
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import axios from '@/axios';
+import Sidebar from '@/components/common/Sidebar.vue';
+import { useAuthStore } from '@/stores/auth'; // Make sure this is your auth store path
+
+const authStore = useAuthStore();
+const surveys = ref([]);
+const loading = ref(true);
+const selectedSurvey = ref(null);
+const responses = ref([]);
+
+const fetchSurveys = async () => {
   try {
     const { data } = await axios.get('/available-surveys');
-    surveys.value = data; // no more filtering needed here
+    
+    // Debug logs to confirm user role and survey target roles
+    console.log('🔐 User Role:', authStore.user?.role);
+    console.log('📋 All Surveys:', data);
+
+    // Match only surveys for current user's role
+    const userRole = authStore.user?.role?.toLowerCase();
+    surveys.value = data.filter(s => s.target_role?.toLowerCase() === userRole);
+
+    console.log('✅ Filtered Surveys:', surveys.value);
   } catch (error) {
-    console.error('Failed to load surveys:', error);
+    console.error('❌ Failed to load surveys:', error);
     alert('Unable to load surveys. Please try again later.');
   } finally {
     loading.value = false;
   }
 };
 
+const selectSurvey = (survey) => {
+  selectedSurvey.value = survey;
+  responses.value = Array(survey.questions.length).fill(null);
+};
 
-  
-  const selectSurvey = (survey) => {
-    selectedSurvey.value = survey;
-    responses.value = Array(survey.questions.length).fill(null); // <-- Important: use null here
-  };
-  
-  const submitResponse = async () => {
-    try {
-      await axios.post('/survey-responses', {
-        survey_id: selectedSurvey.value.id,
-        responses: responses.value,
-      });
-      alert('🎉 Survey submitted successfully!');
-      selectedSurvey.value = null;
-      responses.value = [];
-      await fetchSurveys(); // Refresh survey list after submitting
-    } catch (error) {
-      console.error('Survey submission failed:', error);
-      alert('Failed to submit survey. Please try again.');
-    }
-  };
-  
-  onMounted(() => {
-    fetchSurveys();
-  });
-  </script>
-  
+const submitResponse = async () => {
+  try {
+    await axios.post('/survey-responses', {
+      survey_id: selectedSurvey.value.id,
+      responses: responses.value,
+    });
+    alert('🎉 Survey submitted successfully!');
+    selectedSurvey.value = null;
+    responses.value = [];
+    await fetchSurveys(); // Refresh after submission
+  } catch (error) {
+    console.error('❌ Survey submission failed:', error);
+    alert('Failed to submit survey. Please try again.');
+  }
+};
+
+onMounted(() => {
+  fetchSurveys();
+});
+</script>
+

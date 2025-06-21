@@ -14,9 +14,9 @@
             We'd love to hear your thoughts and experiences to help us improve.
         </p>
 
-        <div style="text-align: center; margin: 30px 0;">
-            <a href="{{ $surveyLink }}" style="background: linear-gradient(to right, #1e7c99, #00c6ff); color: white; padding: 14px 28px; border-radius: 50px; text-decoration: none; font-size: 16px; font-weight: bold;">
-                🎯 Fill Out the Survey
+        <div style="margin: 30px 0; text-align: center;">
+            <a href="http://127.0.0.1:8000/login" style="display: inline-block; background: linear-gradient(to right, #1e7c99, #00c6ff); color: white; padding: 14px 28px; border-radius: 50px; text-decoration: none; font-size: 16px; font-weight: bold;">
+                🎯 Fill Out Survey
             </a>
         </div>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd]">
+  <div class="flex ml-[20%] min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd]">
     <Sidebar />
     <main class="flex-1 flex items-center justify-center p-10">
       
@@ -139,11 +139,26 @@ const nextStep = () => {
 const createSurvey = async () => {
   try {
     loading.value = true;
-    await axios.post('/surveys', form.value);
+    errorMessage.value = '';
+
+    const title = form.value.title.trim();
+    if (!title) {
+      errorMessage.value = 'Survey title is required.';
+      return;
+    }
+
+    const { data } = await axios.get('/surveys/check-title', { params: { title } });
+    if (data.exists) {
+      errorMessage.value = 'A survey with this title already exists. Please choose a different title.';
+      return;
+    }
+
+    await axios.post('/surveys', { ...form.value, title });
     alert('Survey created successfully!');
     router.push('/manage/surveys');
-  } catch (error) {
-    errorMessage.value = 'Failed to create survey';
+
+  } catch (err) {
+    errorMessage.value = err.response?.data?.message || 'Failed to create survey';
   } finally {
     loading.value = false;
   }

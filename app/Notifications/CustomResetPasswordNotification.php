@@ -8,20 +8,20 @@ use Illuminate\Notifications\Messages\MailMessage;
 class CustomResetPasswordNotification extends Notification
 {
     /**
-     * The password reset URL path (e.g. "/reset-password?token=abc123")
+     * The full password reset URL (e.g. "http://localhost:8000/reset-password?token=abc123&email=...").
      *
      * @var string
      */
-    protected $resetPath;
+    protected $resetUrl;
 
     /**
      * Create a new notification instance.
      *
-     * @param string $resetPath
+     * @param string $resetUrl
      */
-    public function __construct($resetPath)
+    public function __construct($resetUrl)
     {
-        $this->resetPath = $resetPath;
+        $this->resetUrl = $resetUrl;
     }
 
     /**
@@ -43,17 +43,12 @@ class CustomResetPasswordNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        // Generate the full URL using Laravel's url helper
-        $resetUrl = url($this->resetPath);
-
         return (new MailMessage)
-            ->subject('Reset Your Password')
-            ->greeting('Hello!')
-            ->line('You are receiving this email because we received a password reset request for your account.')
-            ->action('Reset Password', $resetUrl)
-            ->line('This password reset link will expire in 60 minutes.')
-            ->line('If you did not request a password reset, please ignore this email.')
-            ->salutation('Regards, ' . config('app.name'));
+            ->subject('🔐 Reset Your PEOConnect Password')
+            ->view('emails.reset-password', [
+                'url' => $this->resetUrl,
+                'user' => $notifiable,
+            ]);
     }
 
     /**
@@ -64,8 +59,6 @@ class CustomResetPasswordNotification extends Notification
      */
     public function toArray($notifiable)
     {
-        return [
-            //
-        ];
+        return [];
     }
 }

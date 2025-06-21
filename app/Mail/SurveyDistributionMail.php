@@ -10,25 +10,18 @@ class SurveyDistributionMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $surveyLink; // Public so the Blade template can access it
+    public $surveyLinks;
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct($surveyLink)
+    public function __construct($surveyLinks)
     {
-        $this->surveyLink = $surveyLink;
+        $this->surveyLinks = $surveyLinks;
     }
 
-    /**
-     * Build the message.
-     */
     public function build()
     {
-        return $this->subject('New Survey Available - Please Participate')
-                    ->view('emails.survey-distribution')
+        return $this->view('emails.survey-distribution')
                     ->with([
-                        'surveyLink' => $this->surveyLink, // Pass it properly here
+                        'surveyLinks' => $this->surveyLinks,
                     ]);
     }
 }

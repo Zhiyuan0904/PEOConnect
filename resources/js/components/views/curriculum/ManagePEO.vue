@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd]">
+  <div class="flex ml-[20%] min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd]">
     <Sidebar />
     <main class="flex-1 p-10">
       <div class="max-w-7xl mx-auto">
@@ -8,11 +8,11 @@
           <h1 class="text-4xl font-bold text-[#4072bc]">Manage PEOs</h1>
           <div class="flex gap-4">
             <button @click="openAddModal"
-              class="px-6 py-3 rounded-full bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] hover:from-[#8475d2] hover:to-[#a7c8f8] text-white font-semibold px-7 py-3 rounded-full transition duration-300 shadow-md">
+                    class="px-6 py-3 rounded-full bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] text-white font-semibold shadow-md">
               + Add PEO
             </button>
             <button @click="openCsvModal"
-              class="px-6 py-3 rounded-full bg-gradient-to-r from-[#34d399] to-[#059669] text-white font-semibold shadow hover:brightness-110 transition">
+                    class="px-6 py-3 rounded-full bg-gradient-to-r from-[#34d399] to-[#059669] text-white font-semibold shadow-md">
               Bulk Upload
             </button>
           </div>
@@ -23,25 +23,29 @@
           Loading PEOs...
         </div>
 
-        <!-- Empty state -->
+        <!-- Empty -->
         <div v-else-if="peos.length === 0" class="text-center text-gray-400 text-lg py-10">
           No PEOs found.
         </div>
 
         <!-- Cards -->
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div v-for="peo in peos" :key="peo.id"
-            class="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between">
+          <div v-for="peo in sortedPeos" :key="peo.id"
+              class="bg-white rounded-2xl shadow-lg flex flex-col justify-between">
             <img src="@/assets/peo.jpg" class="w-full h-40 object-cover" />
-            <div class="p-6 flex-1">
+            <div class="p-6">
               <h2 class="text-xl font-bold text-[#4072bc] mb-2">{{ peo.code }}</h2>
-              <p class="text-gray-600 mb-2">{{ peo.description }}</p>
-            </div>
-            <div class="flex justify-around border-t px-4 py-3 bg-[#f9fafb]">
-              <button @click="openEditModal(peo)"
-                class="bg-[#59a8f7] text-white w-24 py-2 rounded-lg shadow">Edit</button>
-              <button @click="deletePEO(peo.id)"
-                class="bg-red-400 text-white w-24 py-2 rounded-lg shadow">Delete</button>
+              <p class="text-gray-600 mb-4">{{ peo.description }}</p>
+              <div class="flex justify-between px-4 py-3 bg-[#f9fafb]">
+                <button @click="openEditModal(peo)"
+                        class="bg-[#59a8f7] text-white py-2 w-24 rounded-lg shadow">
+                  Edit
+                </button>
+                <button @click="deletePEO(peo.id)"
+                        class="bg-red-400 text-white py-2 w-24 rounded-lg shadow">
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -54,16 +58,24 @@
             </h2>
             <form @submit.prevent="submitForm" class="space-y-6">
               <div>
-                <label class="block mb-2 font-semibold text-[#4072bc]">PEO Code</label>
-                <input v-model="form.code" type="text" class="w-full border p-3 rounded-lg" required />
+                <label class="block mb-2 font-semibold text-[#4072bc]">PEO Code <span class="text-red-500">*</span></label>
+                <input v-model="form.code" type="text"
+                       :disabled="editingPEO"
+                       class="w-full border p-3 rounded-lg bg-gray-100"
+                       maxlength="10" required />
               </div>
               <div>
                 <label class="block mb-2 font-semibold text-[#4072bc]">Description</label>
-                <textarea v-model="form.description" rows="3" class="w-full border p-3 rounded-lg"></textarea>
+                <textarea v-model="form.description" rows="3"
+                          class="w-full border p-3 rounded-lg"></textarea>
               </div>
               <div class="flex justify-end gap-2">
-                <button type="button" @click="closeModal" class="text-gray-600 font-semibold">Cancel</button>
-                <button type="submit" class="bg-[#4072bc] text-white px-6 py-2 rounded-lg">
+                <button type="button" @click="closeModal"
+                        class="px-6 py-3 bg-gray-300 text-gray-800 rounded-full">
+                  Cancel
+                </button>
+                <button type="submit"
+                        class="px-6 py-3 bg-gradient-to-r from-[#f07ba3] to-[#c4a8e3] text-white rounded-full">
                   {{ editingPEO ? 'Update' : 'Create' }}
                 </button>
               </div>
@@ -77,9 +89,12 @@
             <h2 class="text-2xl font-bold text-[#059669] mb-6">Bulk Upload CSV</h2>
             <input type="file" @change="handleCsvFile" accept=".csv" class="mb-6 w-full" />
             <div class="flex justify-end gap-2">
-              <button type="button" @click="closeCsvModal" class="text-gray-600 font-semibold">Cancel</button>
+              <button type="button" @click="closeCsvModal"
+                      class="px-6 py-2 bg-gray-300 text-gray-700 rounded-full">
+                Cancel
+              </button>
               <button @click="uploadCsv" :disabled="csvUploading"
-                class="bg-[#059669] text-white px-6 py-2 rounded-lg">
+                      class="px-6 py-2 bg-[#059669] text-white rounded-full">
                 {{ csvUploading ? 'Uploading...' : 'Upload' }}
               </button>
             </div>
@@ -96,7 +111,6 @@ import Sidebar from '@/components/common/Sidebar.vue';
 import axios from '@/axios';
 
 export default {
-  name: 'ManagePEO',
   components: { Sidebar },
   data() {
     return {
@@ -110,6 +124,11 @@ export default {
       form: { code: '', description: '' },
     };
   },
+  computed: {
+    sortedPeos() {
+      return [...this.peos].sort((a, b) => a.code.localeCompare(b.code));
+    },
+  },
   mounted() {
     this.fetchPEOs();
   },
@@ -120,7 +139,7 @@ export default {
         const res = await axios.get('/peos');
         this.peos = res.data;
       } catch (err) {
-        console.error('Error loading PEOs:', err);
+        console.error(err);
         alert('Failed to fetch PEOs.');
       } finally {
         this.loading = false;
@@ -149,17 +168,17 @@ export default {
         this.closeModal();
         this.fetchPEOs();
       } catch (err) {
-        console.error('Submit failed:', err);
+        console.error(err);
         alert('Failed to save PEO.');
       }
     },
     async deletePEO(id) {
-      if (!confirm('Are you sure you want to delete this PEO?')) return;
+      if (!confirm('Are you sure?')) return;
       try {
         await axios.delete(`/peos/${id}`);
         this.fetchPEOs();
       } catch (err) {
-        console.error('Delete failed:', err);
+        console.error(err);
         alert('Failed to delete PEO.');
       }
     },
@@ -177,23 +196,24 @@ export default {
         alert('Please select a CSV file.');
         return;
       }
+      this.csvUploading = true;
       try {
-        this.csvUploading = true;
         const formData = new FormData();
         formData.append('csv', this.csvFile);
-        const response = await axios.post('/peos/bulk-upload', formData);
-        alert(`CSV uploaded: ${response.data.imported} imported, ${response.data.skipped} skipped.`);
-        this.fetchPEOs();
+        const res = await axios.post('/peos/bulk-upload', formData);
+        alert(`Imported ${res.data.imported}, skipped ${res.data.skipped}`);
         this.closeCsvModal();
+        this.fetchPEOs();
       } catch (err) {
-        console.error('CSV upload failed:', err);
+        console.error(err);
         alert('Failed to upload CSV.');
       } finally {
         this.csvUploading = false;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+</style>
