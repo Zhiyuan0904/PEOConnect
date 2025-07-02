@@ -3,7 +3,9 @@ import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
-    base: '/build/',  // relative base for built assets
+    // Set relative base path so that assets are linked correctly
+    base: '/build/',
+
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
@@ -11,9 +13,12 @@ export default defineConfig({
         }),
         vue(),
     ],
+
+    // Server section is only for local development
     server: {
-        https: true,
-        origin: 'https://peoconnect.onrender.com', // important for absolute URLs on build
-        host: '0.0.0.0', // local dev server binding
+        host: '0.0.0.0', // Allow access on local network if needed
+        // Remove these to prevent wrong absolute asset links in production build
+        // https: true,
+        // origin: 'https://peoconnect.onrender.com',
     },
 });
