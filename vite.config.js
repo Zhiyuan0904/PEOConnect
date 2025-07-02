@@ -10,4 +10,11 @@ export default defineConfig({
         }),
         vue(),
     ],
+    // Add these two options:
+    base: 'https://peoconnect.onrender.com/build/',
+    server: {
+        https: true,
+        host: 'peoconnect.onrender.com',
+        origin: 'https://peoconnect.onrender.com',
+    },
 });
