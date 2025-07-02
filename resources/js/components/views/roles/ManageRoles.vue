@@ -26,6 +26,16 @@
             </button>
           </div>
 
+          <!-- Search Bar -->
+          <div class="mb-4 flex justify-end">
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="🔍 Search by name or email..."
+            class="w-full md:w-1/4 px-3 py-2 text-sm border border-gray-300 rounded-full shadow-sm focus:ring-1 focus:ring-[#4072bc] focus:outline-none"
+          />
+        </div>
+
           <!-- Table -->
           <div v-if="loading" class="text-center text-gray-400 py-10">Loading users...</div>
           <div v-else>
@@ -39,7 +49,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="user in users" :key="user.id" class="hover:bg-[#f9fbfd]">
+                <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-[#f9fbfd]">
                   <td class="py-3 px-4">{{ user.name }}</td>
                   <td class="py-3 px-4">{{ user.email }}</td>
                   <td class="py-3 px-4">
@@ -106,7 +116,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 import axios from '@/axios';
@@ -119,6 +129,16 @@ const users = ref([]);
 const loading = ref(true);
 const roles = ['admin', 'lecturer', 'quality team', 'dean', 'student', 'alumni'];
 const allowedRoles = ['lecturer', 'quality team', 'dean'];
+
+const searchQuery = ref('');
+
+const filteredUsers = computed(() => {
+  const query = searchQuery.value.toLowerCase();
+  return users.value.filter(user =>
+    user.name.toLowerCase().includes(query) ||
+    user.email.toLowerCase().includes(query)
+  );
+});
 
 const newUser = ref({ name: '', email: '', role: '' });
 const isCreating = ref(false);

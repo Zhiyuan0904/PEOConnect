@@ -1,6 +1,5 @@
 <template>
-  <div class="relative"> <!-- ✅ Outer wrapper with relative positioning -->
-
+  <div class="relative">
     <!-- Sidebar + Main Layout -->
     <div class="flex ml-[20%] min-h-screen bg-gradient-to-tr from-[#f4f4f4] to-[#f9fbfd] relative z-0">
       <Sidebar />
@@ -54,7 +53,7 @@
 
               <!-- Status Badge -->
               <div class="absolute top-4 right-4">
-                <template v-if="isExpired(dist.end_date)">
+                <template v-if="isExpired(dist.scheduled_end_date)">
                   <span class="px-3 py-1 text-yellow-700 bg-yellow-100 rounded-full text-xs font-semibold">Expired</span>
                 </template>
                 <template v-else-if="dist.is_active">
@@ -74,7 +73,8 @@
                 <div v-if="expandedId === dist.id" class="mt-4 text-sm text-gray-600 space-y-1">
                   <div><b>From:</b> {{ formatDate(dist.start_date) }}</div>
                   <div><b>To:</b> {{ formatDate(dist.end_date) }}</div>
-                  <div><b>Date Field:</b> {{ dist.date_field === 'enrol_date' ? 'Enrolment Date' : 'Graduation Date' }}</div>
+                  <div><b>Date Field:</b> {{ dist.date_field === 'enroll_date' ? 'Enrolment Date' : 'Graduation Date' }}</div>
+                  <div><b>Schedule Ends:</b> {{ formatDate(dist.scheduled_end_date) }}</div>
                   <div><b>Created:</b> {{ formatDate(dist.created_at) }}</div>
                 </div>
               </transition>
@@ -84,12 +84,10 @@
       </main>
     </div>
 
-    <!-- ✅ Modal now at top level and overlays everything -->
+    <!-- ✅ Modal -->
     <CreateDistributionModal :visible="showCreateModal" @close="showCreateModal = false" @created="handleCreated"/>
   </div>
 </template>
-
-
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
@@ -132,10 +130,10 @@ const capitalize = (text) => {
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
-const isExpired = (endDate) => {
-  if (!endDate) return false;
+const isExpired = (scheduledEndDate) => {
+  if (!scheduledEndDate) return false;
   const now = new Date();
-  const end = new Date(endDate);
+  const end = new Date(scheduledEndDate);
   return now > end;
 };
 
@@ -143,15 +141,14 @@ const toggleExpand = (id) => {
   expandedId.value = expandedId.value === id ? null : id;
 };
 
-// Computed filtered list
 const filteredDistributions = computed(() => {
   return distributions.value.filter(dist => {
     const matchesSearch = dist.survey.title.toLowerCase().includes(search.value.toLowerCase());
 
     let matchesStatus = true;
-    if (statusFilter.value === "Active") matchesStatus = dist.is_active && !isExpired(dist.end_date);
-    if (statusFilter.value === "Inactive") matchesStatus = !dist.is_active && !isExpired(dist.end_date);
-    if (statusFilter.value === "Expired") matchesStatus = isExpired(dist.end_date);
+    if (statusFilter.value === "Active") matchesStatus = dist.is_active && !isExpired(dist.scheduled_end_date);
+    if (statusFilter.value === "Inactive") matchesStatus = !dist.is_active && !isExpired(dist.scheduled_end_date);
+    if (statusFilter.value === "Expired") matchesStatus = isExpired(dist.scheduled_end_date);
 
     return matchesSearch && matchesStatus;
   });

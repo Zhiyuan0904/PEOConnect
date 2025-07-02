@@ -4,41 +4,33 @@
   <meta charset="UTF-8">
   <title>Reset Your Password | PEOConnect</title>
 </head>
-<body style="font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; margin: 0; padding: 40px;">
+<body style="font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa; margin: 0; padding: 40px;">
+  <div style="max-width: 600px; margin: auto; background: white; border-radius: 10px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+    
+    <h2 style="text-align: center; color: #1e7c99;">🔒 Reset Your Password</h2>
 
-  <table width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
-    <tr>
-      <td style="padding: 30px; text-align: center; background: linear-gradient(to right, #8475d2, #a7c8f8); color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
-        <h1 style="margin: 0;">PEOConnect</h1>
-        <p style="margin: 5px 0 0;">Reset Your Password</p>
-      </td>
-    </tr>
+    <p style="font-size: 16px; color: #555; text-align: center;">
+      Hello {{ $user->name ?? 'there' }}, <br>
+      We received a request to reset your PEOConnect account password. Click below to continue:
+    </p>
 
-    <tr>
-      <td style="padding: 30px;">
-        <p>Hello {{ $user->name ?? 'there' }},</p>
+    <div style="margin: 30px 0; text-align: center;">
+      <a href="{{ $url }}" style="display: inline-block; background: linear-gradient(to right, #f07ba3, #c4a8e3); color: white; padding: 14px 28px; border-radius: 50px; text-decoration: none; font-size: 16px; font-weight: bold;">
+        🔐 Reset Password
+      </a>
+    </div>
 
-        <p>We received a request to reset your password for your PEOConnect account. Click the button below to reset it:</p>
+    <p style="font-size: 14px; color: #777; text-align: center;">
+      This link will expire in 60 minutes. <br>
+      If you did not request a reset, no action is needed.
+    </p>
 
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="{{ $url }}" style="background: linear-gradient(to right, #f07ba3, #c4a8e3); color: white; padding: 15px 30px; text-decoration: none; border-radius: 50px; font-weight: bold;">
-            Reset Password
-          </a>
-        </div>
+    <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
 
-        <p>This link will expire in 60 minutes.</p>
-        <p>If you didn’t request a password reset, please ignore this email.</p>
-
-        <p style="margin-top: 40px;">– The PEOConnect Team</p>
-      </td>
-    </tr>
-
-    <tr>
-      <td style="padding: 20px; text-align: center; font-size: 12px; color: #999;">
-        © {{ date('Y') }} PEOConnect. All rights reserved.
-      </td>
-    </tr>
-  </table>
-
+    <p style="font-size: 13px; color: #aaa; text-align: center;">
+      Thank you for using PEOConnect!<br>
+      — The PEOConnect Team
+    </p>
+  </div>
 </body>
 </html>

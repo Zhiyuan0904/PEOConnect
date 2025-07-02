@@ -239,8 +239,10 @@ const submitForm = async () => {
 
     if (form.value.id) {
       await axios.post(`/curriculum-content/${form.value.id}?_method=PUT`, payload)
+      alert('Curriculum content successfully updated!')
     } else {
       await axios.post('/curriculum-content', payload)
+      alert('Curriculum content successfully created!')
     }
 
     await fetchData()

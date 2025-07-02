@@ -7,25 +7,33 @@ use App\Models\User;
 use App\Models\Survey;
 use App\Models\SurveyResponse;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\SurveyDistribution;
+use App\Models\CurriculumContent;
+use App\Models\PEO;
 
 class ReportController extends Controller
 {
-    /**
-     * Export the full report, optionally filtered by year.
-     */
     public function exportFullReport(Request $request)
     {
         try {
-            $year = $request->input('year'); // Optional year filter
+            $year = $request->input('year');
 
-            // Get surveys, optionally filtered by year
-            $surveyQuery = Survey::query();
-
-            if ($year) {
-                $surveyQuery->whereYear('created_at', $year);
+            // Fix: ensure valid numeric year
+            if (!is_numeric($year)) {
+                $year = null;
             }
 
-            $surveys = $surveyQuery->get();
+            if ($year) {
+            // Get survey IDs that have responses in the selected year
+            $surveyIds = SurveyResponse::whereYear('created_at', $year)
+                ->pluck('survey_id')
+                ->unique();
+
+            $surveys = Survey::whereIn('id', $surveyIds)->get();
+            } else {
+                $surveys = Survey::all();
+            }
+
 
             if ($surveys->isEmpty()) {
                 return response()->json([
@@ -37,31 +45,73 @@ class ReportController extends Controller
             $reportData = [];
 
             foreach ($surveys as $survey) {
-                $totalStudents = User::where('role', 'student')->count(); // You can customize this if surveys are targeted to specific students only
+                $targetRoles = SurveyDistribution::where('survey_id', $survey->id)
+                    ->pluck('target_role')
+                    ->unique()
+                    ->toArray();
+
+                $totalUsers = User::whereIn('role', $targetRoles)->count();
 
                 $responded = SurveyResponse::where('survey_id', $survey->id)
-                                ->distinct('user_id')
-                                ->count('user_id');
-
-                $percentage = $totalStudents > 0 ? round(($responded / $totalStudents) * 100) : 0;
+                    ->distinct('user_id')
+                    ->count('user_id');
 
                 $reportData[] = [
                     'survey_title' => $survey->title,
+                    'target_role' => implode(', ', $targetRoles),
                     'responded' => $responded,
-                    'total' => $totalStudents,
-                    'percentage' => $percentage,
+                    'total' => $totalUsers,
+                    'percentage' => $totalUsers > 0 ? round(($responded / $totalUsers) * 100) : 0,
                     'created_at' => $survey->created_at->format('Y'),
                 ];
             }
 
-            // Load PDF view and pass data
+            // Top PEOs
+            $peoCounts = [];
+            $allPEOIds = CurriculumContent::pluck('peo_ids')->flatten();
+
+            foreach ($allPEOIds as $ids) {
+                if (is_array($ids)) {
+                    foreach ($ids as $id) {
+                        $peoCounts[$id] = ($peoCounts[$id] ?? 0) + 1;
+                    }
+                } elseif (is_numeric($ids)) {
+                    $peoCounts[$ids] = ($peoCounts[$ids] ?? 0) + 1;
+                }
+            }
+
+            arsort($peoCounts);
+            $peoDetails = PEO::whereIn('id', array_keys($peoCounts))->get();
+
+            $topPeos = [];
+            foreach ($peoCounts as $id => $count) {
+                $peo = $peoDetails->firstWhere('id', $id);
+                if ($peo) {
+                    $topPeos[] = [
+                        'code' => $peo->code,
+                        'description' => $peo->description,
+                        'count' => $count
+                    ];
+                }
+            }
+
+            // Summary
+            $summary = [
+                'total_surveys' => count($reportData),
+                'total_users' => collect($reportData)->sum('total'),
+                'total_responded' => collect($reportData)->sum('responded'),
+                'avg_completion' => collect($reportData)->avg('percentage') ?? 0,
+            ];
+
             $pdf = Pdf::loadView('reports.progress', [
                 'reportData' => $reportData,
-                'year' => $year
+                'topPeos' => $topPeos,
+                'summary' => $summary,
+                'year' => $year,
+                'generated_at' => now()->format('F j, Y, g:i A')
             ]);
 
             $filename = $year ? "survey_report_$year.pdf" : "survey_report.pdf";
-
             return $pdf->download($filename);
 
         } catch (\Throwable $e) {
@@ -75,21 +125,36 @@ class ReportController extends Controller
 
     public function getYearlyComparison()
     {
-        $years = Survey::selectRaw('YEAR(created_at) as year')->distinct()->pluck('year');
+        // Get unique years based on response submission date
+        $years = SurveyResponse::selectRaw('YEAR(created_at) as year')
+            ->distinct()
+            ->pluck('year');
 
         $result = [];
 
         foreach ($years as $year) {
-            $surveys = Survey::whereYear('created_at', $year)->get();
+            // Get survey IDs with responses in that year
+            $surveyIds = SurveyResponse::whereYear('created_at', $year)
+                ->pluck('survey_id')
+                ->unique();
+
+            $surveys = Survey::whereIn('id', $surveyIds)->get();
             $totalSurveys = $surveys->count();
             $totalPercentage = 0;
 
             foreach ($surveys as $survey) {
-                $totalStudents = User::where('role', 'student')->count(); // Adjust if survey targets are more specific
+                $targetRoles = SurveyDistribution::where('survey_id', $survey->id)
+                    ->pluck('target_role')
+                    ->unique()
+                    ->toArray();
+
+                $totalUsers = User::whereIn('role', $targetRoles)->count();
                 $responded = SurveyResponse::where('survey_id', $survey->id)
+                    ->whereYear('created_at', $year)
                     ->distinct('user_id')
                     ->count('user_id');
-                $completion = $totalStudents > 0 ? ($responded / $totalStudents) * 100 : 0;
+
+                $completion = $totalUsers > 0 ? ($responded / $totalUsers) * 100 : 0;
                 $totalPercentage += $completion;
             }
 

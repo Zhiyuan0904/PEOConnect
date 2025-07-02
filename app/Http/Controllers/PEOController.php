@@ -56,46 +56,46 @@ class PEOController extends Controller
     // ✅ NEW FUNCTION: Bulk CSV Upload
     public function bulkUpload(Request $request)
     {
-        $request->validate([
-            'csv' => 'required|file|mimes:csv,txt',
-        ]);
-
         $file = $request->file('csv');
-        $path = $file->getRealPath();
-        $handle = fopen($path, 'r');
+        $data = array_map('str_getcsv', file($file));
 
-        $header = fgetcsv($handle); // read header row
-        $imported = 0;
-        $skipped = 0;
+        // Skip header if present
+        if (strtolower(trim($data[0][0])) === 'description') {
+            array_shift($data);
+        }
 
-        while (($data = fgetcsv($handle, 1000, ',')) !== false) {
-            $row = array_combine($header, $data);
-
-            // Validate each row before insert
-            $validator = Validator::make($row, [
-                'code' => 'required|string|max:10|unique:peos,code',
-                'description' => 'nullable|string|max:255',
-            ]);
-
-            if ($validator->fails()) {
-                $skipped++;
-                continue; // skip invalid rows
+        // Get current max PEO number
+        $existingCodes = PEO::pluck('code')->toArray();
+        $existingNumbers = array_map(function ($code) {
+            if (preg_match('/PEO(\d+)/', $code, $matches)) {
+                return (int)$matches[1];
             }
+            return 0;
+        }, $existingCodes);
+
+        $maxNumber = $existingNumbers ? max($existingNumbers) : 0;
+
+        $imported = 0;
+
+        foreach ($data as $row) {
+            $description = $row[0] ?? null;
+            if (!$description) continue;
+
+            $maxNumber++;
+            $code = 'PEO' . $maxNumber;
 
             PEO::create([
-                'code' => $row['code'],
-                'description' => $row['description'],
+                'code' => $code,
+                'description' => $description,
             ]);
 
             $imported++;
         }
 
-        fclose($handle);
-
         return response()->json([
-            'message' => 'CSV import completed.',
             'imported' => $imported,
-            'skipped' => $skipped,
+            'skipped' => count($data) - $imported
         ]);
     }
+
 }

@@ -1,0 +1,31 @@
+.scroll-announcement {
+  max-height: 160px;
+  overflow: hidden;
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+.scroll-announcement ul {
+  display: inline-block;
+  animation: scroll-vertical 50s linear infinite;
+  list-style: disc;
+  padding-left: 1rem;
+}
+
+@keyframes scroll-vertical {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+/* Hide scrollbars */
+.scroll-announcement::-webkit-scrollbar {
+  display: none;
+}
+.scroll-announcement {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

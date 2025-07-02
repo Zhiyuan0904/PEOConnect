@@ -8,7 +8,7 @@
       </div>
 
       <!-- Right Form -->
-      <div class="w-full md:w-1/2 p-10 bg-gradient-to-b from-[#4072bc] to-[#5ca1d4] flex flex-col justify-center">
+      <div class="w-full md:w-1/2 p-10 bg-gradient-to-b from-[#6ca8dd] to-[#b1d4ef] flex flex-col justify-center">
         <div class="bg-white p-8 rounded-xl shadow-lg">
           <h2 class="text-2xl font-bold text-center mb-2 text-[#1B3A57]">Forgot Password?</h2>
           <p class="text-sm text-gray-600 text-center mb-6 leading-relaxed">

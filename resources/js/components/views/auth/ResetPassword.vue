@@ -3,12 +3,12 @@
     <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex overflow-hidden">
 
       <!-- Left Illustration -->
-      <div class="hidden md:flex w-1/2 bg-white items-center justify-center p-6">
+      <div class="hidden md:flex w-1/2 bg-white items-center justify-center p-10">
         <img src="@/assets/resetpassword.png" alt="Reset Password" class="max-w" />
       </div>
 
       <!-- Right Form -->
-      <div class="w-full md:w-1/2 p-10 bg-gradient-to-b from-[#4072bc] to-[#5ca1d4] flex flex-col justify-center">
+      <div class="w-full md:w-1/2 p-10 bg-gradient-to-b from-[#6ca8dd] to-[#b1d4ef] flex flex-col justify-center">
         <div class="bg-white p-8 rounded-xl shadow-lg">
           <h2 class="text-2xl font-bold text-center mb-3 text-[#1B3A57]">Enter New Password</h2>
           <p class="text-sm text-gray-600 text-center mb-6">Please choose a password different from the previous one.</p>

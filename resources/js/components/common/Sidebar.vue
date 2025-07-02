@@ -30,8 +30,8 @@
         <SidebarLink v-if="authStore.user?.role === 'admin'" to="/manage/responses" label="Manage Responses" :isActive="isActive('/manage/responses')" />
         <SidebarLink v-if="['student','alumni'].includes(authStore.user?.role)" to="/respond/surveys" label="Respond to Survey" :isActive="isActive('/respond/surveys')" />
         <SidebarLink v-if="['admin','quality team'].includes(authStore.user?.role)" to="/manage/distributions" label="Manage Distributions" :isActive="isActive('/manage/distributions')" />
-        <SidebarLink v-if="['admin','lecturer'].includes(authStore.user?.role)" to="/manage-curriculum-content" label="Manage Curriculum Content" :isActive="isActive('/manage-curriculum-content')" />
-        <SidebarLink v-if="['admin','lecturer'].includes(authStore.user?.role)" to="/manage/PEOs" label="Manage PEO" :isActive="isActive('/manage/PEOs')" />
+                <SidebarLink v-if="['admin','lecturer', 'quality team'].includes(authStore.user?.role)" to="/manage/PEOs" label="Manage PEO" :isActive="isActive('/manage/PEOs')" />
+        <SidebarLink v-if="['admin','lecturer','quality team' ].includes(authStore.user?.role)" to="/manage-curriculum-content" label="Manage Curriculum Content" :isActive="isActive('/manage-curriculum-content')" />
         <SidebarLink v-if="['admin','quality team','dean'].includes(authStore.user?.role)" to="/track/progress" label="Track Progress" :isActive="isActive('/track/progress')" />
         <SidebarLink v-if="['admin','quality team','dean'].includes(authStore.user?.role)" to="/reports" label="Reports" :isActive="isActive('/reports')" />
       </nav>

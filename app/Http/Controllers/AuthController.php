@@ -19,27 +19,46 @@ class AuthController extends Controller
     // ✅ User Registration
     public function register(Request $request)
     {
+        // Check if email already exists
         if (User::where('email', $request->email)->exists()) {
-            return response()->json(['message' => 'Email already exists. Please use another email.'], 409);
+            return response()->json([
+                'message' => 'Email already exists. Please use another email.'
+            ], 409);
         }
 
+        // Validate fields with custom messages
         $validator = Validator::make($request->all(), [
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255',
             'password' => 'required|string|min:6',
             'role'     => 'required|in:student,alumni',
+        ], [
+            'name.required'     => 'Please enter your full name.',
+            'email.required'    => 'Email is required to register.',
+            'email.email'       => 'Please enter a valid email address.',
+            'password.required' => 'Password is required.',
+            'password.min'      => 'Password must have at least 6 characters.',
+            'role.required'     => 'Please select a role.',
+            'role.in'           => 'Role must be student or alumni only.',
         ]);
 
+        // If validation fails, return first error message in 'message', and all in 'errors'
         if ($validator->fails()) {
+            $fieldErrors = [];
+            foreach ($validator->errors()->messages() as $field => $messages) {
+                $fieldErrors[$field] = $messages[0]; // only first message per field
+            }
+
             return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'message' => reset($fieldErrors), // show first error message overall
+                'errors'  => $fieldErrors
             ], 422);
         }
 
         $email = $request->email;
         $role  = $request->role;
 
+        // Role-based email domain check
         $valid = match ($role) {
             'student' => str_ends_with($email, '@graduate.utm.my'),
             'alumni'  => !str_ends_with($email, '@graduate.utm.my'),
@@ -52,6 +71,7 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Create and notify user
         $user = User::create([
             'name'     => $request->name,
             'email'    => $email,

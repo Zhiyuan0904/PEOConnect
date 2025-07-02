@@ -16,6 +16,7 @@ class SurveyDistribution extends Model
         'start_date',
         'end_date',
         'scheduled_active_date',
+        'scheduled_end_date', 
         'is_active',
     ];
 

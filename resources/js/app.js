@@ -7,6 +7,7 @@ import router from './router'
 import App from './App.vue'
 import axios from './axios'
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import './assets/main.css';
 
 // 🔧 Create Pinia store and register plugin correctly
 const pinia = createPinia()

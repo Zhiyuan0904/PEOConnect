@@ -102,7 +102,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     // 🚀 Curriculum + PEO Management
-    Route::middleware(['role:admin|lecturer'])->group(function () {
+    Route::middleware(['role:admin|lecturer|quality team'])->group(function () {
         Route::apiResource('curriculum-content', CurriculumContentController::class);
         Route::apiResource('peos', PEOController::class);
         Route::post('/peos/bulk-upload', [PEOController::class, 'bulkUpload']);
@@ -112,6 +112,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['role:admin|quality team|dean'])->group(function () {
         Route::get('/track/progress', [ProgressController::class, 'index']);
         Route::get('/track/progress/{title}', [ProgressController::class, 'detail']);
+        Route::get('/track/top-peos', [ProgressController::class, 'topPEOs']);
     });
 
     // 🚀 Reporting Module
@@ -127,4 +128,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/manage/users/send-login-email', [ManageUserController::class, 'sendLoginEmail']);
         Route::delete('/manage/users/{id}', [ManageUserController::class, 'destroy']); // ← DELETE endpoint
     });
+
+    Route::middleware(['role:student'])->get('/student/progress', [SurveyController::class, 'studentProgress']);
+
 });

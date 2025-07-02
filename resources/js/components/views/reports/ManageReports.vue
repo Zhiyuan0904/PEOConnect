@@ -47,6 +47,18 @@
           <canvas ref="barChartCanvas" class="w-full" height="100"></canvas>
         </div>
 
+        <!-- Most Selected PEOs -->
+        <div v-if="topPeos.length" class="bg-white rounded-2xl shadow p-8 mb-10">
+          <h2 class="text-2xl font-bold text-[#4072bc] mb-6">Most Selected PEOs</h2>
+          <ul class="list-disc list-inside text-gray-700 space-y-2">
+            <li v-for="peo in topPeos" :key="peo.code">
+              <span class="font-semibold text-[#4072bc]">{{ peo.code }}:</span>
+              {{ peo.description }}
+              <span class="text-sm text-gray-500">({{ peo.count }} selections)</span>
+            </li>
+          </ul>
+        </div>
+
         <!-- Table Preview -->
         <div class="bg-white rounded-2xl shadow p-8">
           <h2 class="text-2xl font-bold text-[#4072bc] mb-6">Survey Completion Summary</h2>
@@ -100,10 +112,10 @@ const totalResponses = ref(0)
 const avgCompletion = ref(0)
 const selectedYear = ref(null)
 const availableYears = ref([])
+const topPeos = ref([])
 const barChartCanvas = ref(null)
 let barChartInstance = null
 
-// Fetch unique years
 const fetchAvailableYears = async () => {
   try {
     const res = await axios.get('/track/available-years')
@@ -113,24 +125,34 @@ const fetchAvailableYears = async () => {
   }
 }
 
-// Fetch main report
 const fetchReportSummary = async () => {
   try {
     const res = await axios.get('/track/progress', {
       params: { year: selectedYear.value }
     })
     reportData.value = res.data
-
     totalSurveys.value = res.data.length
     totalResponses.value = res.data.reduce((acc, item) => acc + item.responded, 0)
     const totalCompletion = res.data.reduce((acc, item) => acc + item.percentage, 0)
     avgCompletion.value = res.data.length ? Math.round(totalCompletion / res.data.length) : 0
+
+    fetchTopPEOs()
   } catch (err) {
     console.error('Error fetching report summary', err)
   }
 }
 
-// Export PDF
+const fetchTopPEOs = async () => {
+  try {
+    const res = await axios.get('/track/top-peos', {
+      params: { year: selectedYear.value }
+    })
+    topPeos.value = res.data
+  } catch (err) {
+    console.error('Error fetching top PEOs', err)
+  }
+}
+
 const exportReport = async () => {
   try {
     const response = await axios.get('/reports', {
@@ -153,7 +175,6 @@ const exportReport = async () => {
   }
 }
 
-// Render yearly comparison chart
 const renderYearlyChart = async () => {
   try {
     const res = await axios.get('/track/yearly-comparison')

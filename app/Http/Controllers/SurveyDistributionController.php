@@ -29,9 +29,10 @@ class SurveyDistributionController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'scheduled_active_date' => 'required|date',
+            'scheduled_end_date' => 'required|date|after_or_equal:scheduled_active_date',
         ]);
 
-        // Set is_active based on whether the scheduled date is in the past
+        // Set is_active based on whether the scheduled_active_date is in the past
         $validated['is_active'] = Carbon::parse($validated['scheduled_active_date'])->isPast() ? 1 : 0;
 
         // Create the distribution
@@ -41,7 +42,10 @@ class SurveyDistributionController extends Controller
         $surveyLink = url('/respond/surveys/' . $validated['survey_id']);
 
         // Get all users with matching role
-        $recipients = User::where('role', $validated['target_role'])->pluck('email');
+        $recipients = User::where('role', $validated['target_role'])
+            ->whereBetween($validated['date_field'], [$validated['start_date'], $validated['end_date']])
+            ->pluck('email');
+
 
         // Send email to each user
         foreach ($recipients as $email) {
@@ -54,6 +58,7 @@ class SurveyDistributionController extends Controller
         ], 201);
     }
 
+
     // (Optional) Admin Action: Update existing distribution
     public function update(Request $request, $id)
     {
@@ -63,8 +68,10 @@ class SurveyDistributionController extends Controller
             'start_date' => 'date',
             'end_date' => 'date',
             'scheduled_active_date' => 'date',
+            'scheduled_end_date' => 'date|after_or_equal:scheduled_active_date',
             'is_active' => 'boolean',
         ]);
+
 
         $distribution->update($validated);
 

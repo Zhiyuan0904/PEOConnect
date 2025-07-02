@@ -170,7 +170,7 @@ class SurveyController extends Controller
     public function availableSurveys(Request $request)
     {
         $user = $request->user();
-        $today = now()->toDateString();
+        $today = now();
 
         if (!in_array($user->role, ['student', 'alumni'])) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -179,44 +179,36 @@ class SurveyController extends Controller
         $distributions = SurveyDistribution::with('survey')
             ->where('is_active', true)
             ->whereDate('scheduled_active_date', '<=', $today)
-            ->whereDate('start_date', '<=', $today)
-            ->whereDate('end_date', '>=', $today)
+            ->whereDate('scheduled_end_date', '>=', $today)
             ->where('target_role', $user->role)
             ->get();
 
-        $surveys = $distributions->filter(function ($d) use ($user) {
-            if (!$d->survey) return false;
+        $surveys = $distributions->filter(function ($dist) use ($user) {
+            if (!$dist->survey) return false;
 
-            if ($user->role === 'student') {
-                return $user->enroll_date &&
-                    $user->enroll_date >= $d->start_date &&
-                    $user->enroll_date <= $d->end_date;
-            }
+            $field = $dist->date_field;
+            $userDate = $user->{$field};
 
-            if ($user->role === 'alumni') {
-                return $user->expected_graduate_date &&
-                    $user->expected_graduate_date >= $d->start_date &&
-                    $user->expected_graduate_date <= $d->end_date;
-            }
+            if (!$userDate) return false;
 
-            return false;
-        })->filter(function ($d) use ($user) {
-            // Only include if user hasn't responded yet
-            return !\App\Models\SurveyResponse::where('survey_id', $d->survey->id)
-                    ->where('user_id', $user->id)
-                    ->exists();
-        })->map(function ($d) {
+            return $userDate >= $dist->start_date && $userDate <= $dist->end_date;
+        })->filter(function ($dist) use ($user) {
+            return !SurveyResponse::where('survey_id', $dist->survey->id)
+                ->where('user_id', $user->id)
+                ->exists();
+        })->map(function ($dist) {
             return [
-                'id' => $d->survey->id,
-                'title' => $d->survey->title,
-                'description' => $d->survey->description,
-                'questions' => $d->survey->questions,
-                'target_role' => $d->target_role,
+                'id' => $dist->survey->id,
+                'title' => $dist->survey->title,
+                'description' => $dist->survey->description,
+                'questions' => $dist->survey->questions,
+                'target_role' => $dist->target_role,
             ];
         })->values();
 
         return response()->json($surveys);
     }
+
 
 
     public function checkTitle(Request $request)
