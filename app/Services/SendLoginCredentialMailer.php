@@ -24,6 +24,10 @@ class SendLoginCredentialMailer
             'name'  => 'PEOConnect'
         ];
 
+        // ✅ Log for debugging
+        logger('Brevo Key: ' . $apiKey);
+        logger('Sending to: ' . $this->email);
+
         $response = Http::withHeaders([
             'api-key' => $apiKey,
             'accept' => 'application/json',
@@ -39,8 +43,11 @@ class SendLoginCredentialMailer
 
         if (!$response->successful()) {
             logger()->error('Brevo Mail Error:', ['response' => $response->body()]);
+        } else {
+            logger('Brevo Mail Sent Successfully to: ' . $this->email);
         }
     }
+
 
     private function buildHtmlContent()
     {
