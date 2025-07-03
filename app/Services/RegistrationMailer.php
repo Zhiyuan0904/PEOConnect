@@ -17,14 +17,18 @@ class RegistrationMailer
 
     public function send()
     {
-        $verificationUrl = URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(60),
-            [
-                'id' => $this->user->getKey(),
-                'hash' => sha1($this->user->getEmailForVerification()),
-            ]
-        );
+        // Generate the verification URL using 'web' middleware
+        $verificationUrl = null;
+        app('router')->middleware('web')->group(function () use (&$verificationUrl) {
+            $verificationUrl = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes(60),
+                [
+                    'id' => $this->user->getKey(),
+                    'hash' => sha1($this->user->getEmailForVerification()),
+                ]
+            );
+        });
 
         $apiKey = config('services.brevo.api_key');
 
@@ -34,7 +38,7 @@ class RegistrationMailer
             'content-type' => 'application/json',
         ])->post('https://api.brevo.com/v3/smtp/email', [
             'sender' => [
-                'email' => 'peoconnect0@gmail.com', // ✅ Must be a verified sender
+                'email' => 'peoconnect0@gmail.com',
                 'name' => 'PEOConnect'
             ],
             'to' => [
@@ -51,6 +55,7 @@ class RegistrationMailer
             ]);
         }
     }
+
 
     private function buildHtml($url)
     {
