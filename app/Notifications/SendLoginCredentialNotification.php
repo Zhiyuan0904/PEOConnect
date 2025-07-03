@@ -1,14 +1,13 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Services;
 
-use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\MailMessage;
+use App\Services\BrevoMailService;
 
-class SendLoginCredentialNotification extends Notification
+class SendLoginCredentialMailer
 {
-    public $email;
-    public $password;
+    protected $email;
+    protected $password;
 
     public function __construct($email, $password)
     {
@@ -16,18 +15,33 @@ class SendLoginCredentialNotification extends Notification
         $this->password = $password;
     }
 
-    public function via($notifiable)
+    public function send($user)
     {
-        return ['mail'];
-    }
+        $html = "
+            <p>Hello {$user->name},</p>
+            <p>Your login credentials for <strong>PEOConnect</strong> are as follows:</p>
+            <ul>
+                <li><strong>Email:</strong> {$this->email}</li>
+                <li><strong>Password:</strong> {$this->password}</li>
+            </ul>
+            <p>Please log in and change your password after your first login.</p>
+            <p>
+                <a href=\"" . url('/') . "\" style=\"
+                    background:#4CAF50;
+                    color:white;
+                    padding:10px 20px;
+                    text-decoration:none;
+                    border-radius:5px;
+                \">Login to PEOConnect</a>
+            </p>
+            <p>Thank you,<br>PEOConnect Team</p>
+        ";
 
-    public function toMail($notifiable)
-    {
-        return (new \Illuminate\Notifications\Messages\MailMessage)
-            ->subject('Your Login Credentials for PEOConnect')
-            ->view('emails.login-credentials', [
-                'email' => $this->email,
-                'password' => $this->password
-            ]);
+        return BrevoMailService::send(
+            $user->email,
+            $user->name,
+            '🔐 Your Login Credentials for PEOConnect',
+            $html
+        );
     }
 }
