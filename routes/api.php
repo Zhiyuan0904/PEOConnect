@@ -29,7 +29,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 // ====================
 
 // Handle email verification from link
-Route::get('/api/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
     $user = User::findOrFail($id);
 
     if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
