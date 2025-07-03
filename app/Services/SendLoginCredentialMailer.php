@@ -24,9 +24,6 @@ class SendLoginCredentialMailer
             'name'  => 'PEOConnect'
         ];
 
-        // ✅ Log for debugging
-        logger('Brevo Key: ' . $apiKey);
-        logger('Sending to: ' . $this->email);
 
         $response = Http::withHeaders([
             'api-key' => $apiKey,

@@ -7,7 +7,7 @@ use App\Models\Survey;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\SurveyDistributionMail;
+use App\Services\SurveyDistributionMailer;
 use Carbon\Carbon;
 
 class SurveyDistributionController extends Controller
@@ -49,8 +49,14 @@ class SurveyDistributionController extends Controller
 
         // Send email to each user
         foreach ($recipients as $email) {
-            Mail::to($email)->send(new SurveyDistributionMail($surveyLink));
+            $user = User::where('email', $email)->first();
+            if ($user) {
+                (new SurveyDistributionMailer($user->email, $user->name, [
+                    $distribution->survey->title => $surveyLink
+                ]))->send();
+            }
         }
+
 
         return response()->json([
             'message' => 'Survey distribution created and emails sent!',

@@ -6,9 +6,8 @@ use Illuminate\Console\Command;
 use App\Models\SurveyDistribution;
 use App\Models\User;
 use App\Models\SurveyResponse;
-use App\Mail\SurveyDistributionMail;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use App\Services\SurveyDistributionMailer;
 use Carbon\Carbon;
 
 class SendScheduledSurveys extends Command
@@ -20,18 +19,18 @@ class SendScheduledSurveys extends Command
     {
         $today = Carbon::today();
 
-        // Step 1: Get all active distributions for today or earlier
+        // Step 1: Get all active distributions due
         $distributions = SurveyDistribution::whereDate('scheduled_active_date', '<=', $today)
-                                            ->where('is_active', true)
-                                            ->with('survey')
-                                            ->get();
+            ->where('is_active', true)
+            ->with('survey')
+            ->get();
 
         if ($distributions->isEmpty()) {
             $this->info('No distributions due today.');
             return 0;
         }
 
-        // Step 2: Group surveys by user
+        // Step 2: Group active, unresponded surveys per user
         $userSurveyMap = [];
 
         foreach ($distributions as $distribution) {
@@ -46,26 +45,31 @@ class SendScheduledSurveys extends Command
             $users = $query->get();
 
             foreach ($users as $user) {
-                // Check if this user already responded to this survey
                 $alreadyResponded = SurveyResponse::where('survey_id', $distribution->survey_id)
                     ->where('user_id', $user->id)
                     ->exists();
 
                 if (!$alreadyResponded) {
-                    $userSurveyMap[$user->email][] = url('/login' . $distribution->survey_id);
+                    $surveyLink = url('/respond/surveys/' . $distribution->survey_id);
+                    $userSurveyMap[$user->email]['name'] = $user->name;
+                    $userSurveyMap[$user->email]['surveys'][$distribution->survey->title] = $surveyLink;
                 }
             }
         }
 
-        // Step 3: Send one email per user
-        foreach ($userSurveyMap as $email => $surveyLinks) {
+        // Step 3: Send combined Brevo email per user
+        foreach ($userSurveyMap as $email => $data) {
+            $name = $data['name'];
+            $surveyLinks = $data['surveys'] ?? [];
+
             if (count($surveyLinks) > 0) {
-                Mail::to($email)->send(new SurveyDistributionMail($surveyLinks));
-                Log::info("Sent combined survey email to {$email} for " . count($surveyLinks) . " surveys.");
-                $this->info("Sent combined survey email to {$email}");
+                (new SurveyDistributionMailer($email, $name, $surveyLinks))->send();
+                Log::info("📧 Sent combined survey email to {$email} (" . count($surveyLinks) . " surveys)");
+                $this->info("✅ Sent email to {$email}");
             }
         }
 
-        $this->info('✅ Survey emails sent successfully.');
+        $this->info('✅ All combined survey emails sent successfully.');
+        return 0;
     }
 }

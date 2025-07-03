@@ -6,8 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\SurveyDistribution;
 use App\Models\User;
 use App\Models\SurveyResponse;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\SurveyDistributionMail;
+use App\Services\SurveyDistributionMailer;
 use Carbon\Carbon;
 
 class DistributeSurveysCommand extends Command
@@ -48,13 +47,10 @@ class DistributeSurveysCommand extends Command
 
             $this->info("✅ Found {$users->count()} users for date field: {$dateField}");
 
-            foreach ($users as $u) {
-                $this->info("➡️  Match: {$u->email} ({$dateField} = " . $u[$dateField] . ")");
-            }
-
-            // ✅ 3. Send emails only to users who haven't responded
             $sentCount = 0;
+
             foreach ($users as $user) {
+                // ✅ Skip if already responded
                 $hasResponded = SurveyResponse::where('survey_id', $distribution->survey_id)
                     ->where('user_id', $user->id)
                     ->exists();
@@ -64,16 +60,22 @@ class DistributeSurveysCommand extends Command
                     continue;
                 }
 
-                // Send only to users who haven't responded
-                Mail::to($user->email)->send(new SurveyDistributionMail($distribution->survey));
-                $this->info('📧 Email sent to: ' . $user->email);
+                // ✅ Prepare survey link
+                $surveyLink = url('/respond/surveys/' . $distribution->survey_id);
+
+                // ✅ Send via Brevo API
+                (new SurveyDistributionMailer($user->email, $user->name, [
+                    $distribution->survey->title => $surveyLink
+                ]))->send();
+
+                $this->info("📧 Brevo email sent to: {$user->email}");
                 $sentCount++;
             }
 
             $this->info("✅ Distribution complete. Emails sent: {$sentCount}");
 
-            // (Optional) mark as sent
-            // $distribution->update(['sent_at' => Carbon::now()]);
+            // Optionally mark distribution as processed
+            // $distribution->update(['sent_at' => now()]);
         }
 
         return 0;

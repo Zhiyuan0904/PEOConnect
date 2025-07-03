@@ -13,31 +13,6 @@ use Illuminate\Support\Facades\Http;
 //     return 'Test survey email sent successfully!';
 // });
 
-Route::get('/test-mail', function () {
-    $response = Http::withHeaders([
-        'api-key' => env('BREVO_API_KEY'),
-        'Content-Type' => 'application/json',
-        'Accept' => 'application/json',
-    ])->post('https://api.brevo.com/v3/smtp/email', [
-        'sender' => [
-            'name' => 'PEOConnect',
-            'email' => '911215001@smtp-brevo.com',
-        ],
-        'to' => [[
-            'email' => 'your_email@gmail.com',
-            'name' => 'Your Name',
-        ]],
-        'subject' => 'PEOConnect API Email Test',
-        'htmlContent' => '<p>This is a test email via <strong>Brevo API</strong>.</p>',
-    ]);
-
-    return response()->json([
-        'success' => $response->successful(),
-        'status' => $response->status(),
-        'body' => $response->json(),
-    ]);
-});
-
 
 // 🔥 Important: put the "catch all" route LAST!
 Route::get('/{any}', function () {

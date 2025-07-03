@@ -7,12 +7,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Auth\Events\Registered;
-use App\Notifications\CustomRegistrationMail;
-use App\Notifications\CustomResetPasswordNotification;
+use App\Services\RegistrationMailer;
+use App\Services\ResetPasswordMailer;
 
 class AuthController extends Controller
 {
@@ -81,7 +79,7 @@ class AuthController extends Controller
         ]);
 
         $user->assignRole($role);
-        $user->notify(new CustomRegistrationMail());
+        (new RegistrationMailer($user))->send();
 
         return response()->json([
             'message' => 'User registered successfully. Please check your email to verify your account.'
@@ -170,7 +168,7 @@ class AuthController extends Controller
         );
 
         $resetUrl = url("/reset-password?token=$token&email=" . urlencode($user->email));
-        $user->notify(new CustomResetPasswordNotification($resetUrl));
+        (new ResetPasswordMailer($user->email, $resetUrl))->send($user);
 
         return response()->json(['message' => 'Reset link sent to email'], 200);
     }
