@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use App\Notifications\SendLoginCredentialNotification;
+use App\Services\SendLoginCredentialMailer;
+
 
 class ManageUserController extends Controller
 {
@@ -119,11 +120,13 @@ class ManageUserController extends Controller
             return response()->json(['message' => 'User not found.'], 404);
         }
 
-        $user->notify(new SendLoginCredentialNotification($user->email, $request->password));
+        // ✅ Send via Brevo API
+        (new SendLoginCredentialMailer($user->email, $request->password))->send($user);
 
         return response()->json(['message' => 'Login email sent successfully.']);
     }
 
+        
     /**
      * Delete a user (Admin only)
      */
