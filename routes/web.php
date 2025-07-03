@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Mail\SurveyDistributionMail;
 use Illuminate\Support\Facades\Mail;
 use App\Services\BrevoMailService;
+use Illuminate\Support\Facades\Http;
 
 // // 🛠 TEST email first (put above!)
 // Route::get('/test-survey-email', function () {
@@ -13,15 +14,30 @@ use App\Services\BrevoMailService;
 // });
 
 Route::get('/test-mail', function () {
-    $sent = BrevoMailService::send(
-        'zhiyuann0904@gmail.com', // ✅ change to your real email
-        'Your Name',
-        'Test Email from PEOConnect via Brevo API',
-        '<p>This is a test email sent using <strong>Brevo Email API</strong>. 🎉</p>'
-    );
+    $response = Http::withHeaders([
+        'api-key' => env('BREVO_API_KEY'),
+        'Content-Type' => 'application/json',
+        'Accept' => 'application/json',
+    ])->post('https://api.brevo.com/v3/smtp/email', [
+        'sender' => [
+            'name' => 'PEOConnect',
+            'email' => '911215001@smtp-brevo.com',
+        ],
+        'to' => [[
+            'email' => 'your_email@gmail.com',
+            'name' => 'Your Name',
+        ]],
+        'subject' => 'PEOConnect API Email Test',
+        'htmlContent' => '<p>This is a test email via <strong>Brevo API</strong>.</p>',
+    ]);
 
-    return $sent ? '✅ Email sent successfully!' : '❌ Failed to send email.';
+    return response()->json([
+        'success' => $response->successful(),
+        'status' => $response->status(),
+        'body' => $response->json(),
+    ]);
 });
+
 
 // 🔥 Important: put the "catch all" route LAST!
 Route::get('/{any}', function () {
