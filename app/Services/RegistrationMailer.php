@@ -63,12 +63,12 @@ class RegistrationMailer
                     Thank you for registering. Please confirm your email by clicking the button below:
                 </p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="' . $url . '" style="background: #4CAF50; color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold;">
+                    <a href="' . $url . '" style="background: linear-gradient(to right, #f07ba3, #c4a8e3); color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold;">
                         Confirm Email
                     </a>
                 </div>
                 <p style="font-size: 14px; color: #777; text-align: center;">
-                    This link will expire in 60 minutes. If you didn\'t register, please ignore this email.
+                    This link will expire in 60 minutes. If you didn\'t register, please ignore this email.🌱
                 </p>
                 <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
                 <p style="font-size: 13px; color: #aaa; text-align: center;">

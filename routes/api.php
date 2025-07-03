@@ -29,7 +29,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 // ====================
 
 // Handle email verification from link
-Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
+Route::get('/api/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
     $user = User::findOrFail($id);
 
     if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
@@ -37,14 +37,15 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
     }
 
     if ($user->hasVerifiedEmail()) {
-        return redirect('http://localhost:8000/email/verified-success?status=already-verified');
+        return redirect('https://peoconnect.onrender.com/email/verified-success?status=already-verified');
     }
 
     $user->markEmailAsVerified();
     event(new Verified($user));
 
-    return redirect('http://localhost:8000/email/verified-success?status=success');
+    return redirect('https://peoconnect.onrender.com/email/verified-success?status=success');
 })->middleware(['signed'])->name('verification.verify');
+
 
 // Resend verification link (requires Sanctum auth)
 Route::post('/email/verification-notification', function (Request $request) {
