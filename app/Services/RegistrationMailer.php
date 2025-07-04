@@ -22,10 +22,12 @@ class RegistrationMailer
 {
     $verificationUrl = null;
 
+    // Wrap the route generation in the web middleware context
     app('router')->middleware('web')->group(function () use (&$verificationUrl) {
-        // Force correct scheme + root domain again here
-        URL::forceScheme('https');
-        URL::forceRootUrl(config('app.url'));
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+            URL::forceRootUrl(config('app.url'));
+        }
 
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
@@ -37,7 +39,13 @@ class RegistrationMailer
         );
     });
 
-    Log::info('Generated verification URL: ' . $verificationUrl);
+    // Log and fail if URL generation failed
+    if (!$verificationUrl) {
+        Log::error('[RegistrationMailer] Failed to generate verification URL');
+        throw new \Exception('Could not generate verification URL');
+    }
+
+    Log::info('[RegistrationMailer] Generated verification URL: ' . $verificationUrl);
 
     $this->mailService->send(
         $this->user->email,
@@ -46,6 +54,8 @@ class RegistrationMailer
         null
     );
 }
+
+
 
 
 
