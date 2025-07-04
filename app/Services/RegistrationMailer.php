@@ -2,24 +2,31 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\URL;
 use App\Models\User;
+use App\Services\BrevoMailService;
+use Illuminate\Support\Facades\URL;
 
 class RegistrationMailer
 {
     protected $user;
+    protected $mailService;
 
-    public function __construct(User $user)
+    public function __construct(User $user, BrevoMailService $mailService)
     {
         $this->user = $user;
+        $this->mailService = $mailService;
     }
 
     public function send()
     {
-        // Generate the verification URL using 'web' middleware
+        // Generate the email verification URL
         $verificationUrl = null;
+
         app('router')->middleware('web')->group(function () use (&$verificationUrl) {
+            // Force correct HTTPS scheme and root domain
+            URL::forceScheme('https');
+            URL::forceRootUrl(config('app.url'));
+
             $verificationUrl = URL::temporarySignedRoute(
                 'verification.verify',
                 now()->addMinutes(60),
@@ -30,32 +37,14 @@ class RegistrationMailer
             );
         });
 
-        $apiKey = config('services.brevo.api_key');
-
-        $response = Http::withHeaders([
-            'api-key' => $apiKey,
-            'accept' => 'application/json',
-            'content-type' => 'application/json',
-        ])->post('https://api.brevo.com/v3/smtp/email', [
-            'sender' => [
-                'email' => 'peoconnect0@gmail.com',
-                'name' => 'PEOConnect'
-            ],
-            'to' => [
-                ['email' => $this->user->email, 'name' => $this->user->name]
-            ],
-            'subject' => '✨ Confirm Your Email for PEOConnect',
-            'htmlContent' => $this->buildHtml($verificationUrl),
-        ]);
-
-        if (!$response->successful()) {
-            logger()->error('Brevo Registration Mail Error', [
-                'email' => $this->user->email,
-                'response' => $response->body(),
-            ]);
-        }
+        // ✅ Send using 4 arguments to match your BrevoMailService::send()
+        $this->mailService->send(
+            $this->user->email,
+            'Verify Your Email Address',
+            $this->buildHtml($verificationUrl),
+            null // or any optional parameter your service expects (like attachments or plainText version)
+        );
     }
-
 
     private function buildHtml($url)
     {
