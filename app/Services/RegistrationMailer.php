@@ -49,10 +49,11 @@ class RegistrationMailer
 
     $this->mailService->send(
         $this->user->email,
+        $this->user->name ?? 'User',
         'Verify Your Email Address',
-        $this->buildHtml($verificationUrl),
-        null
+        $this->buildHtml($verificationUrl)
     );
+
 }
 
 
