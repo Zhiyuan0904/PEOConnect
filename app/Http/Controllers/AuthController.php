@@ -86,10 +86,11 @@ class AuthController extends Controller
         $user->assignRole($role);
 
         // ✅ Proper call to RegistrationMailer with 2 required arguments
-        (new RegistrationMailer($user, $this->mailService))->send();
+        $verificationUrl = (new RegistrationMailer($user, $this->mailService))->send();
 
         return response()->json([
-            'message' => 'User registered successfully. Please check your email to verify your account.'
+            'message' => 'User registered successfully. Please check your email to verify your account.',
+            'debug_verification_url' => $verificationUrl // ✅ TEMPORARY: Remove after testing
         ], 201);
     }
 

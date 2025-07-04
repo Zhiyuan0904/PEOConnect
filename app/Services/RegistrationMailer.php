@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Services\BrevoMailService;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Log;
 
 class RegistrationMailer
 {
@@ -37,13 +38,19 @@ class RegistrationMailer
             );
         });
 
+        // ✅ Log the generated URL after it's created
+        Log::info('Generated verification URL: ' . $verificationUrl);
+
         // ✅ Send using 4 arguments to match your BrevoMailService::send()
         $this->mailService->send(
             $this->user->email,
             'Verify Your Email Address',
             $this->buildHtml($verificationUrl),
-            null // or any optional parameter your service expects (like attachments or plainText version)
+            null // or any optional parameter your service expects
         );
+
+        // ✅ Return for debugging — REMOVE after testing
+        return $verificationUrl;
     }
 
     private function buildHtml($url)
