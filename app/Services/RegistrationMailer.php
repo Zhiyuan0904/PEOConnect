@@ -19,39 +19,27 @@ class RegistrationMailer
     }
 
     public function send()
-    {
-        // Generate the email verification URL
-        $verificationUrl = null;
+{
+    // Generate the email verification URL directly
+    $verificationUrl = URL::temporarySignedRoute(
+        'verification.verify',
+        now()->addMinutes(60),
+        [
+            'id' => $this->user->getKey(),
+            'hash' => sha1($this->user->getEmailForVerification()),
+        ]
+    );
 
-        app('router')->middleware('web')->group(function () use (&$verificationUrl) {
-            // Force correct HTTPS scheme and root domain
-            URL::forceScheme('https');
-            URL::forceRootUrl(config('app.url'));
+    Log::info('Generated verification URL: ' . $verificationUrl);
 
-            $verificationUrl = URL::temporarySignedRoute(
-                'verification.verify',
-                now()->addMinutes(60),
-                [
-                    'id' => $this->user->getKey(),
-                    'hash' => sha1($this->user->getEmailForVerification()),
-                ]
-            );
-        });
+    $this->mailService->send(
+        $this->user->email,
+        'Verify Your Email Address',
+        $this->buildHtml($verificationUrl),
+        null
+    );
+}
 
-        // ✅ Log the generated URL after it's created
-        Log::info('Generated verification URL: ' . $verificationUrl);
-
-        // ✅ Send using 4 arguments to match your BrevoMailService::send()
-        $this->mailService->send(
-            $this->user->email,
-            'Verify Your Email Address',
-            $this->buildHtml($verificationUrl),
-            null // or any optional parameter your service expects
-        );
-
-        // ✅ Return for debugging — REMOVE after testing
-        return $verificationUrl;
-    }
 
     private function buildHtml($url)
     {

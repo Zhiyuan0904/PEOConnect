@@ -8,23 +8,20 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Verified;
 use App\Models\User;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
-Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
-    $user = User::findOrFail($id);
-
-    if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-        return response()->json(['message' => 'Invalid or expired verification link.'], 403);
-    }
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $user = $request->user();
 
     if ($user->hasVerifiedEmail()) {
         return redirect('https://peoconnect.onrender.com/email/verified-success?status=already-verified');
     }
 
-    $user->markEmailAsVerified();
-    event(new Verified($user));
+    $request->fulfill(); // Automatically calls markEmailAsVerified and dispatches Verified event
 
     return redirect('https://peoconnect.onrender.com/email/verified-success?status=success');
 })->middleware(['signed'])->name('verification.verify');
+
 
 // // 🛠 TEST email first (put above!)
 // Route::get('/test-survey-email', function () {
