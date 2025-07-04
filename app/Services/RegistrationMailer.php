@@ -20,15 +20,22 @@ class RegistrationMailer
 
     public function send()
 {
-    // Generate the email verification URL directly
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        [
-            'id' => $this->user->getKey(),
-            'hash' => sha1($this->user->getEmailForVerification()),
-        ]
-    );
+    $verificationUrl = null;
+
+    app('router')->middleware('web')->group(function () use (&$verificationUrl) {
+        // Force correct scheme + root domain again here
+        URL::forceScheme('https');
+        URL::forceRootUrl(config('app.url'));
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            [
+                'id' => $this->user->getKey(),
+                'hash' => sha1($this->user->getEmailForVerification()),
+            ]
+        );
+    });
 
     Log::info('Generated verification URL: ' . $verificationUrl);
 
@@ -39,6 +46,7 @@ class RegistrationMailer
         null
     );
 }
+
 
 
     private function buildHtml($url)
