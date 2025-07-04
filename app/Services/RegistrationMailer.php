@@ -19,16 +19,14 @@ class RegistrationMailer
     }
 
     public function send()
-{
-    $verificationUrl = null;
-
-    // Wrap the route generation in the web middleware context
-    app('router')->middleware('web')->group(function () use (&$verificationUrl) {
+    {
+        // ✅ Force URL scheme for production
         if (app()->environment('production')) {
             URL::forceScheme('https');
             URL::forceRootUrl(config('app.url'));
         }
 
+        // ✅ Generate signed verification URL
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
@@ -37,28 +35,21 @@ class RegistrationMailer
                 'hash' => sha1($this->user->getEmailForVerification()),
             ]
         );
-    });
 
-    // Log and fail if URL generation failed
-    if (!$verificationUrl) {
-        Log::error('[RegistrationMailer] Failed to generate verification URL');
-        throw new \Exception('Could not generate verification URL');
+        if (!$verificationUrl) {
+            Log::error('[RegistrationMailer] Failed to generate verification URL');
+            throw new \Exception('Could not generate verification URL');
+        }
+
+        Log::info('[RegistrationMailer] Generated verification URL: ' . $verificationUrl);
+
+        $this->mailService->send(
+            $this->user->email,
+            $this->user->name ?? 'User',
+            'Verify Your Email Address',
+            $this->buildHtml($verificationUrl)
+        );
     }
-
-    Log::info('[RegistrationMailer] Generated verification URL: ' . $verificationUrl);
-
-    $this->mailService->send(
-        $this->user->email,
-        $this->user->name ?? 'User',
-        'Verify Your Email Address',
-        $this->buildHtml($verificationUrl)
-    );
-
-}
-
-
-
-
 
     private function buildHtml($url)
     {
