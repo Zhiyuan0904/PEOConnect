@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class BrevoMailService
 {
@@ -15,7 +16,7 @@ class BrevoMailService
         ])->post('https://api.brevo.com/v3/smtp/email', [
             'sender' => [
                 'name' => 'PEOConnect',
-                'email' => '911215001@smtp-brevo.com',
+                'email' => '911215e01@smtp-brevo.com',
             ],
             'to' => [[
                 'email' => $toEmail,
@@ -25,6 +26,15 @@ class BrevoMailService
             'htmlContent' => $htmlContent,
         ]);
 
-        return $response->successful();
+        if ($response->successful()) {
+            Log::info("✅ Email sent successfully to: $toEmail");
+            return true;
+        } else {
+            Log::error('❌ Email failed', [
+                'to' => $toEmail,
+                'response' => $response->body(),
+            ]);
+            return false;
+        }
     }
 }
