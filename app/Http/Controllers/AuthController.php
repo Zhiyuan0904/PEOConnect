@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -11,10 +11,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Services\RegistrationMailer;
 use App\Services\ResetPasswordMailer;
+use App\Services\BrevoMailService;
 
 class AuthController extends Controller
 {
     // ✅ User Registration
+    protected BrevoMailService $mailService;
+
+    public function __construct(BrevoMailService $mailService)
+    {
+        $this->mailService = $mailService;
+    }
+
     public function register(Request $request)
     {
         // Check if email already exists
@@ -40,15 +48,14 @@ class AuthController extends Controller
             'role.in'           => 'Role must be student or alumni only.',
         ]);
 
-        // If validation fails, return first error message in 'message', and all in 'errors'
         if ($validator->fails()) {
             $fieldErrors = [];
             foreach ($validator->errors()->messages() as $field => $messages) {
-                $fieldErrors[$field] = $messages[0]; // only first message per field
+                $fieldErrors[$field] = $messages[0];
             }
 
             return response()->json([
-                'message' => reset($fieldErrors), // show first error message overall
+                'message' => reset($fieldErrors),
                 'errors'  => $fieldErrors
             ], 422);
         }
@@ -56,7 +63,6 @@ class AuthController extends Controller
         $email = $request->email;
         $role  = $request->role;
 
-        // Role-based email domain check
         $valid = match ($role) {
             'student' => str_ends_with($email, '@graduate.utm.my'),
             'alumni'  => !str_ends_with($email, '@graduate.utm.my'),
@@ -69,7 +75,6 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Create and notify user
         $user = User::create([
             'name'     => $request->name,
             'email'    => $email,
@@ -79,7 +84,9 @@ class AuthController extends Controller
         ]);
 
         $user->assignRole($role);
-        (new RegistrationMailer($user))->send();
+
+        // ✅ Proper call to RegistrationMailer with 2 required arguments
+        (new RegistrationMailer($user, $this->mailService))->send();
 
         return response()->json([
             'message' => 'User registered successfully. Please check your email to verify your account.'
