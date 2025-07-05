@@ -26,6 +26,10 @@ class RegistrationMailer
             URL::forceRootUrl(config('app.url'));
         }
 
+        Log::info('APP_URL: ' . config('app.url'));
+        Log::info('Now timestamp: ' . now()->timestamp);
+        Log::info('Expiry timestamp: ' . now()->addMinutes(60)->timestamp);
+
         // ✅ Generate signed verification URL
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
