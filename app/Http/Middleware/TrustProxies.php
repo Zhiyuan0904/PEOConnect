@@ -2,8 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Http\Middleware\TrustProxies as Middleware;
-use Symfony\Component\HttpFoundation\Request; // Import the correct class
+use Illuminate\Http\Middleware\TrustProxies as Middleware; 
+use Symfony\Component\HttpFoundation\Request;
+
 
 class TrustProxies extends Middleware
 {
@@ -19,5 +20,6 @@ class TrustProxies extends Middleware
      *
      * @var int
      */
-    protected $headers = Request::HEADER_X_FORWARDED_FOR; // Correct header for Laravel 11+
+    protected $headers = Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PROTO;
+
 }
