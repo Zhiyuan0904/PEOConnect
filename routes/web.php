@@ -9,6 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Verified;
 use App\Models\User;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/clear-cache', function () {
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    return '✅ Cache cleared';
+});
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $user = $request->user();
@@ -30,6 +39,15 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
 //     return 'Test survey email sent successfully!';
 // });
 
+Route::get('/test-brevo', function () {
+    \App\Services\BrevoMailService::send(
+        'your-email@gmail.com',
+        'Test User',
+        'Test Subject',
+        '<p>This is a test email.</p>'
+    );
+    return 'Test email sent.';
+});
 
 // 🔥 Important: put the "catch all" route LAST!
 Route::get('/{any}', function () {
