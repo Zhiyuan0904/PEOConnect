@@ -5,8 +5,6 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,15 +19,15 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot()
+    public function boot(): void
     {
-        // Force HTTPS if in production
+        // ✅ Force HTTPS only — do NOT override the root URL
         if (app()->environment('production')) {
-            URL::forceScheme('https');
-            URL::forceRootUrl(config('app.url'));
+            URL::forceScheme('https'); // Ensures signed URLs are validated as HTTPS
+            // URL::forceRootUrl(config('app.url')); ❌ Do NOT use this — it may break signed route validation
         }
 
-        // Optional: if you use older MySQL
+        // ✅ Optional: Prevent charset issues with older MySQL
         Schema::defaultStringLength(191);
     }
 }

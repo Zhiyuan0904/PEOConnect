@@ -20,10 +20,10 @@ class RegistrationMailer
 
     public function send()
     {
-        // ✅ Force URL scheme for production
+        // ✅ Force HTTPS scheme in production only
         if (app()->environment('production')) {
-            URL::forceScheme('https');
-            URL::forceRootUrl(config('app.url'));
+            URL::forceScheme('https'); // ✅ Keep this
+            // URL::forceRootUrl(config('app.url')); ❌ REMOVE this line
         }
 
         Log::info('APP_URL: ' . config('app.url'));
@@ -50,10 +50,11 @@ class RegistrationMailer
         $this->mailService->send(
             $this->user->email,
             $this->user->name ?? 'User',
-            'Verify Your Email Address',
+            '✨ Confirm Your Email for PEOConnect',
             $this->buildHtml($verificationUrl)
         );
     }
+
 
     private function buildHtml($url)
     {
@@ -67,7 +68,7 @@ class RegistrationMailer
                 </p>
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="' . $url . '" style="background: linear-gradient(to right, #f07ba3, #c4a8e3); color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold;">
-                        Confirm Email
+                        Confirm Your Email
                     </a>
                 </div>
                 <p style="font-size: 14px; color: #777; text-align: center;">
