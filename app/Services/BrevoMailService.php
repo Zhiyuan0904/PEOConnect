@@ -16,7 +16,7 @@ class BrevoMailService
         ])->post('https://api.brevo.com/v3/smtp/email', [
             'sender' => [
                 'name' => 'PEOConnect',
-                'email' => '911215e01@smtp-brevo.com',
+                'email' => 'peoconnect0@gmail.com',
             ],
             'to' => [[
                 'email' => $toEmail,
